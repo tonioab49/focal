@@ -6,8 +6,12 @@ import path from 'node:path'
 import matter from 'gray-matter'
 import { revalidatePath } from 'next/cache'
 import type { TaskPriority, TaskStatus } from '@/types'
-
-const REPOS_DIR = path.join(process.cwd(), 'repos')
+import {
+  REPOS_DIR,
+  parseRepoSlugs,
+  repoLocalPath,
+  pushRepo,
+} from '@/lib/github'
 
 export async function saveTask(formData: {
   filePath: string
@@ -18,9 +22,13 @@ export async function saveTask(formData: {
 }) {
   const { filePath, title, status, priority, assignee } = formData
 
-  // Ensure the file is within the repos directory
   const resolved = path.resolve(filePath)
-  if (!resolved.startsWith(REPOS_DIR)) {
+
+  // Validate the path is inside repos/ and inside a .focal/tasks/ subtree
+  if (!resolved.startsWith(REPOS_DIR + path.sep)) {
+    throw new Error('Invalid file path')
+  }
+  if (!resolved.includes(`${path.sep}.focal${path.sep}tasks${path.sep}`)) {
     throw new Error('Invalid file path')
   }
 
@@ -35,16 +43,15 @@ export async function saveTask(formData: {
   fs.writeFileSync(resolved, newContent, 'utf-8')
 
   revalidatePath('/')
-  revalidatePath(`/task`)
+  revalidatePath('/task')
 }
 
 export async function getUncommittedFiles(): Promise<string[]> {
-  const repos = fs.readdirSync(REPOS_DIR, { withFileTypes: true })
+  const slugs = parseRepoSlugs()
   const dirty: string[] = []
 
-  for (const entry of repos) {
-    if (!entry.isDirectory() || entry.name.startsWith('.')) continue
-    const repoPath = path.join(REPOS_DIR, entry.name)
+  for (const slug of slugs) {
+    const repoPath = repoLocalPath(slug)
     const focalDir = path.join(repoPath, '.focal', 'tasks')
     if (!fs.existsSync(focalDir)) continue
 
@@ -55,9 +62,8 @@ export async function getUncommittedFiles(): Promise<string[]> {
       }).trim()
       if (output) {
         for (const line of output.split('\n')) {
-          // Format: "XY filename" — strip the 3-char prefix
           const file = line.slice(3)
-          dirty.push(`${entry.name}/${file}`)
+          dirty.push(`${slug}/${file}`)
         }
       }
     } catch {
@@ -69,12 +75,12 @@ export async function getUncommittedFiles(): Promise<string[]> {
 }
 
 export async function commitChanges(): Promise<{ message: string }> {
-  const repos = fs.readdirSync(REPOS_DIR, { withFileTypes: true })
+  const slugs = parseRepoSlugs()
   let committed = 0
+  const errors: string[] = []
 
-  for (const entry of repos) {
-    if (!entry.isDirectory() || entry.name.startsWith('.')) continue
-    const repoPath = path.join(REPOS_DIR, entry.name)
+  for (const slug of slugs) {
+    const repoPath = repoLocalPath(slug)
     const focalDir = path.join(repoPath, '.focal', 'tasks')
     if (!fs.existsSync(focalDir)) continue
 
@@ -87,6 +93,13 @@ export async function commitChanges(): Promise<{ message: string }> {
 
       execSync('git add .focal/tasks/', { cwd: repoPath })
       execSync('git commit -m "Update tasks"', { cwd: repoPath })
+
+      try {
+        pushRepo(repoPath)
+      } catch {
+        errors.push(`Push failed for ${slug}`)
+      }
+
       committed++
     } catch {
       // skip repos with no changes or git errors
@@ -95,8 +108,11 @@ export async function commitChanges(): Promise<{ message: string }> {
 
   revalidatePath('/')
 
+  if (errors.length > 0) {
+    return { message: errors.join('; ') }
+  }
   if (committed === 0) return { message: 'No changes to commit' }
   return {
-    message: `Committed changes in ${committed} ${committed === 1 ? 'repository' : 'repositories'}`,
+    message: `Committed and pushed in ${committed} ${committed === 1 ? 'repository' : 'repositories'}`,
   }
 }

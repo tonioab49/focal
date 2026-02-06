@@ -1,0 +1,39 @@
+---
+title: Prepare Dockerfile for distribution
+status: todo
+priority: medium
+---
+
+## Description
+
+Create a production-ready Dockerfile for distributing Focal as a container image. The image should be optimized for size and security, following best practices for Node.js/Next.js applications.
+
+## Acceptance Criteria
+
+- [ ] Multi-stage build to minimize final image size
+- [ ] Uses official Node.js Alpine base image
+- [ ] Runs as non-root user
+- [ ] Only production dependencies included in final image
+- [ ] Next.js standalone output mode enabled
+- [ ] Git installed in the image (required for cloning/pushing repos)
+- [ ] Environment variables documented (GITHUB_REPOS, GITHUB_TOKEN)
+- [ ] Health check endpoint configured
+- [ ] .dockerignore file excludes node_modules, .next, repos/
+
+## Technical Notes
+
+Next.js supports a `standalone` output mode that bundles only the necessary files for production. Enable it in `next.config.mjs`:
+
+```js
+const nextConfig = {
+  output: 'standalone',
+};
+```
+
+The final image needs `git` since Focal clones and pushes to GitHub repositories at runtime.
+
+## Related Files
+
+- `Dockerfile`
+- `next.config.mjs`
+- `.dockerignore`

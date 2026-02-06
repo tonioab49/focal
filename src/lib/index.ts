@@ -1,18 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
-import type { Task, TaskStatus, TaskPriority, Repository } from '@/types'
+import type { Task, TaskStatus, TaskPriority } from '@/types'
+import { syncAllRepos } from './github'
 
-const REPOS_DIR = path.join(process.cwd(), 'repos')
 const VALID_STATUSES: TaskStatus[] = ['todo', 'in-progress', 'done']
 const VALID_PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
-
-export function discoverRepositories(): Repository[] {
-  const entries = fs.readdirSync(REPOS_DIR, { withFileTypes: true })
-  return entries
-    .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
-    .map((e) => ({ name: e.name, path: path.join(REPOS_DIR, e.name) }))
-}
 
 function findMdxFiles(dir: string): string[] {
   const results: string[] = []
@@ -62,7 +55,7 @@ function parseTaskFile(filePath: string, repoName: string): Task | null {
 }
 
 export function loadTasks(): Task[] {
-  const repos = discoverRepositories()
+  const repos = syncAllRepos()
   const tasks: Task[] = []
 
   for (const repo of repos) {
