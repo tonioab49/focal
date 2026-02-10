@@ -10,10 +10,10 @@ export default async function Home() {
   const dirtyFiles = await getUncommittedFiles()
 
   return (
-    <main className="min-h-screen p-8 max-w-6xl mx-auto">
-      <div className="mb-8 flex items-end justify-between">
+    <div className="h-full p-6">
+      <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Focal</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Tasks</h1>
           <p className="mt-1 text-sm text-gray-500">
             {tasks.length} tasks across{' '}
             {new Set(tasks.map((t) => t.repository)).size} repositories
@@ -29,10 +29,10 @@ export default async function Home() {
       </div>
       <KanbanBoard tasks={tasks} />
       {dirtyFiles.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-6">
           <CommitBar dirtyFiles={dirtyFiles} />
         </div>
       )}
-    </main>
+    </div>
   )
 }

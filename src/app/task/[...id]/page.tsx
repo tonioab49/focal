@@ -12,8 +12,10 @@ export default function TaskEditPage({ params }: { params: { id: string[] } }) {
   if (!task) notFound()
 
   return (
-    <main className="min-h-screen p-8 max-w-2xl mx-auto">
-      <TaskEditForm task={task} />
-    </main>
+    <div className="h-full p-6">
+      <div className="max-w-2xl">
+        <TaskEditForm task={task} />
+      </div>
+    </div>
   )
 }

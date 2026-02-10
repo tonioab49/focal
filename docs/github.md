@@ -4,7 +4,7 @@ This document describes how Focal interacts with GitHub repositories containing 
 
 ## Overview
 
-Focal clones remote GitHub repositories to a local working `/tmp/repos` directory and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for MDX task files, allows editing them through the UI, and commits/pushes changes back.
+Focal clones remote GitHub repositories to `/tmp/focal/repos` and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for MDX task files, allows editing them through the UI, and commits/pushes changes back.
 
 ## Configuration
 
@@ -38,10 +38,10 @@ No other permissions are required. Focal does not interact with issues, pull req
 
 ### 1. Clone / sync
 
-On startup (or when the board loads), Focal ensures each configured repository is cloned locally into a working directory (`repos/<owner>/<repo>`). If a repo is already cloned, Focal pulls the latest changes from the default branch.
+On startup (or when the board loads), Focal ensures each configured repository is cloned locally into `/tmp/focal/repos/<owner>/<repo>`. If a repo is already cloned, Focal pulls the latest changes from the default branch.
 
 ```
-repos/
+/tmp/focal/repos/
 ├── axios/
 │   └── axios/          # cloned from github.com/axios/axios
 ├── curl/
@@ -60,7 +60,7 @@ The token is used only in the Git remote URL. It is never logged, never sent to 
 
 ### 2. Read tasks
 
-Focal scans `repos/{owner}/{repo}/.focal/tasks/` for `.mdx` files and parses their YAML frontmatter, exactly as before. The repository display name is `{owner}/{repo}`.
+Focal scans `/tmp/focal/repos/{owner}/{repo}/.focal/tasks/` for `.mdx` files and parses their YAML frontmatter, exactly as before. The repository display name is `{owner}/{repo}`.
 
 ### 3. Edit tasks
 
@@ -86,7 +86,7 @@ The push is the only network operation that modifies the remote repository.
 
 ### Path validation
 
-Before writing any file, Focal validates that the resolved file path is within the `repos/` working directory. This prevents path traversal attacks where a crafted request could write outside the expected tree.
+Before writing any file, Focal validates that the resolved file path is within `/tmp/focal/repos/`. This prevents path traversal attacks where a crafted request could write outside the expected tree.
 
 ### Input validation
 
@@ -97,7 +97,7 @@ Before writing any file, Focal validates that the resolved file path is within t
 ### Token handling
 
 - `GITHUB_TOKEN` is read from the environment at runtime, never from a config file.
-- The token appears in the Git remote URL inside local clones. The `repos/` directory should be in `.gitignore` (and it is) so it is never committed to Focal's own repository.
+- The token appears in the Git remote URL inside local clones in `/tmp/focal/repos/`, which is outside the project directory and never committed.
 - The token is never included in API responses, client-side bundles, or log output.
 
 ### Network surface

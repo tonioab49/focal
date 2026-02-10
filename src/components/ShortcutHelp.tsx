@@ -1,49 +1,47 @@
-"use client";
+'use client'
 
-import { useState, useMemo, useCallback } from "react";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcut";
+import { useState, useMemo, useCallback } from 'react'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
 
 const SECTIONS = [
   {
-    title: "Board",
+    title: 'Board',
     shortcuts: [
-      { keys: ["J", "\u2193"], label: "Move down" },
-      { keys: ["K", "\u2191"], label: "Move up" },
-      { keys: ["H", "\u2190"], label: "Move left" },
-      { keys: ["L", "\u2192"], label: "Move right" },
-      { keys: ["\u21B5"], label: "Open task" },
-      { keys: ["Esc"], label: "Clear selection" },
+      { keys: ['J', '\u2193'], label: 'Move down' },
+      { keys: ['K', '\u2191'], label: 'Move up' },
+      { keys: ['H', '\u2190'], label: 'Move left' },
+      { keys: ['L', '\u2192'], label: 'Move right' },
+      { keys: ['\u21B5'], label: 'Open task' },
+      { keys: ['Esc'], label: 'Clear selection' },
     ],
   },
   {
-    title: "Edit",
+    title: 'Edit',
     shortcuts: [
-      { keys: ["\u2318S"], label: "Save task" },
-      { keys: ["Esc"], label: "Back to board" },
+      { keys: ['\u2318S'], label: 'Save task' },
+      { keys: ['Esc'], label: 'Back to board' },
     ],
   },
   {
-    title: "Global",
+    title: 'Global',
     shortcuts: [
-      { keys: ["Ctrl+\u21B5"], label: "Commit changes" },
-      { keys: ["?"], label: "Toggle this help" },
+      { keys: ['['], label: 'Toggle sidebar' },
+      { keys: ['Ctrl+\u21B5'], label: 'Commit changes' },
+      { keys: ['?'], label: 'Toggle this help' },
     ],
   },
-];
+]
 
 export function ShortcutHelp() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
-  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const toggle = useCallback(() => setOpen((v) => !v), [])
 
   useKeyboardShortcuts(
-    useMemo(
-      () => [{ key: "?", shift: true, handler: toggle }],
-      [toggle]
-    )
-  );
+    useMemo(() => [{ key: '?', shift: true, handler: toggle }], [toggle]),
+  )
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -94,5 +92,5 @@ export function ShortcutHelp() {
         </div>
       </div>
     </div>
-  );
+  )
 }

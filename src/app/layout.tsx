@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { AppShell } from '@/components/AppShell'
 import { ShortcutHelp } from '@/components/ShortcutHelp'
 import './globals.css'
 
@@ -16,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <AppShell>{children}</AppShell>
         <ShortcutHelp />
       </body>
     </html>
