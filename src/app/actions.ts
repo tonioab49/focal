@@ -46,17 +46,42 @@ export async function saveTask(formData: {
   revalidatePath('/task')
 }
 
+const LOCAL_FOCAL_DIR = path.join(process.cwd(), '.focal')
+
+export async function saveDoc(formData: { filePath: string; content: string }) {
+  const { filePath, content } = formData
+
+  const resolved = path.resolve(filePath)
+
+  // Validate the path is inside .focal/docs/ subtree (either in repos or local project)
+  const inRepos = resolved.startsWith(REPOS_DIR + path.sep)
+  const inLocal = resolved.startsWith(LOCAL_FOCAL_DIR + path.sep)
+
+  if (!inRepos && !inLocal) {
+    throw new Error('Invalid file path')
+  }
+  if (!resolved.includes(`${path.sep}.focal${path.sep}docs${path.sep}`)) {
+    throw new Error('Invalid file path')
+  }
+
+  fs.writeFileSync(resolved, content, 'utf-8')
+
+  revalidatePath('/')
+  revalidatePath('/docs')
+}
+
 export async function getUncommittedFiles(): Promise<string[]> {
   const slugs = parseRepoSlugs()
   const dirty: string[] = []
 
   for (const slug of slugs) {
     const repoPath = repoLocalPath(slug)
-    const focalDir = path.join(repoPath, '.focal', 'tasks')
+    const focalDir = path.join(repoPath, '.focal')
     if (!fs.existsSync(focalDir)) continue
 
     try {
-      const output = execSync('git status --porcelain .focal/tasks/', {
+      // Check both tasks and docs
+      const output = execSync('git status --porcelain .focal/', {
         cwd: repoPath,
         encoding: 'utf-8',
       }).trim()
@@ -81,18 +106,19 @@ export async function commitChanges(): Promise<{ message: string }> {
 
   for (const slug of slugs) {
     const repoPath = repoLocalPath(slug)
-    const focalDir = path.join(repoPath, '.focal', 'tasks')
+    const focalDir = path.join(repoPath, '.focal')
     if (!fs.existsSync(focalDir)) continue
 
     try {
-      const output = execSync('git status --porcelain .focal/tasks/', {
+      // Check for any changes in .focal/
+      const output = execSync('git status --porcelain .focal/', {
         cwd: repoPath,
         encoding: 'utf-8',
       }).trim()
       if (!output) continue
 
-      execSync('git add .focal/tasks/', { cwd: repoPath })
-      execSync('git commit -m "Update tasks"', { cwd: repoPath })
+      execSync('git add .focal/', { cwd: repoPath })
+      execSync('git commit -m "Update focal content"', { cwd: repoPath })
 
       try {
         pushRepo(repoPath)

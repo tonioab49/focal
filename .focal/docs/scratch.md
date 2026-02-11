@@ -31,3 +31,6 @@
 2.  You find the original Task MD. Because it's a Markdown file, you see the **entire narrative**: the original requirement, the AI agent's failed attempts, the human's final decision log, and the **exact Git hashes** of the commits that implemented it.
     
 3.  You use git blame on the _documentation_ file itself to see exactly who approved that architectural shift and when.**The Difference:** Documentation isn't a "second-class citizen" that lives in a browser; it's a **version-controlled ledger** of your team's collective intelligence.
+    
+
+Adding a piece of text for testing

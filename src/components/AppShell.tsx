@@ -1,25 +1,29 @@
-"use client";
+'use client'
 
-import { useState, useMemo, useCallback } from "react";
-import { Sidebar } from "./Sidebar";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcut";
+import { useState, useMemo, useCallback } from 'react'
+import { Sidebar } from './Sidebar'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
+import type { DocNode } from '@/lib/docs'
 
-export function AppShell({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export function AppShell({
+  children,
+  docTree,
+}: {
+  children: React.ReactNode
+  docTree: DocNode[]
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
-  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), [])
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [])
 
   useKeyboardShortcuts(
-    useMemo(
-      () => [{ key: "[", handler: toggleSidebar }],
-      [toggleSidebar]
-    )
-  );
+    useMemo(() => [{ key: '[', handler: toggleSidebar }], [toggleSidebar]),
+  )
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar open={sidebarOpen} onClose={closeSidebar} />
+      <Sidebar open={sidebarOpen} onClose={closeSidebar} docTree={docTree} />
 
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
@@ -51,5 +55,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
-  );
+  )
 }

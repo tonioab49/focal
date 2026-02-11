@@ -16,10 +16,18 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Edit',
+    title: 'Task Edit',
     shortcuts: [
       { keys: ['\u2318S'], label: 'Save task' },
       { keys: ['Esc'], label: 'Back to board' },
+    ],
+  },
+  {
+    title: 'Docs',
+    shortcuts: [
+      { keys: ['E'], label: 'Edit document' },
+      { keys: ['\u2318S'], label: 'Save document' },
+      { keys: ['Esc'], label: 'Cancel editing' },
     ],
   },
   {

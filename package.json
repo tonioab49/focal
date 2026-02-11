@@ -10,15 +10,24 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tiptap/extension-link": "^3.19.0",
+    "@tiptap/extension-text-align": "^3.19.0",
+    "@tiptap/extension-underline": "^3.19.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
     "gray-matter": "^4.0.3",
+    "marked": "^17.0.1",
     "next": "^14.2.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "turndown": "^7.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/turndown": "^5.0.6",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.0",
