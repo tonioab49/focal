@@ -113,7 +113,14 @@ export function syncRepo(slug: string): void {
 
 export function syncAllRepos(): Repository[] {
   if (isLocalMode()) {
-    return [getLocalRepo()]
+    try {
+      return [getLocalRepo()]
+    } catch {
+      throw new Error(
+        'No GITHUB_REPOS configured and not inside a git repository. ' +
+        'Set the GITHUB_REPOS environment variable (e.g. "owner/repo") to use remote mode.',
+      )
+    }
   }
 
   const slugs = parseRepoSlugs()

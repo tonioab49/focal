@@ -1,0 +1,8 @@
+node_modules
+.next
+repos
+.git
+.env*.local
+.env.docker.local
+.env
+.claude
