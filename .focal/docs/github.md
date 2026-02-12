@@ -64,7 +64,7 @@ Focal scans `/tmp/focal/repos/{owner}/{repo}/.focal/tasks/` for `.mdx` files and
 
 ### 3. Edit tasks
 
-When a user saves a task through the edit form, Focal writes the updated frontmatter to the MDX file on disk. This is a local filesystem operation — nothing is sent to GitHub at this point.
+When a user saves a task through the edit form, Focal writes the updated frontmatter to the MDX file in the cloned copy under `/tmp/focal/repos/`. This is a local filesystem operation — nothing is sent to GitHub at this point. (In local mode, writes go directly to the working directory instead; see [Repository Modes](repos).)
 
 ### 4. Commit and push
 
