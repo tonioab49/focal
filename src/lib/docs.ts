@@ -80,13 +80,6 @@ export function loadDocTree(): DocNode[] {
     allDocs.push(...repoDocs)
   }
 
-  // Also scan the local project's .focal/docs (for Focal's own docs)
-  const localDocsDir = path.join(process.cwd(), '.focal', 'docs')
-  if (fs.existsSync(localDocsDir)) {
-    const localDocs = scanDocsDir(localDocsDir, 'focal')
-    allDocs.push(...localDocs)
-  }
-
   return allDocs
 }
 

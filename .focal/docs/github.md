@@ -1,10 +1,10 @@
 # GitHub Integration
 
-This document describes how Focal interacts with GitHub repositories containing tasks.
+This document describes how Focal interacts with remote GitHub repositories in **remote mode**. Remote mode is active when the `GITHUB_REPOS` environment variable is set. When it is empty or unset, Focal runs in **local mode** instead (see [Repository Modes](repos)).
 
 ## Overview
 
-Focal clones remote GitHub repositories to `/tmp/focal/repos` and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for MDX task files, allows editing them through the UI, and commits/pushes changes back.
+In remote mode, Focal clones GitHub repositories to `/tmp/focal/repos` and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for MDX task files, allows editing them through the UI, and commits/pushes changes back.
 
 ## Configuration
 
@@ -86,7 +86,7 @@ The push is the only network operation that modifies the remote repository.
 
 ### Path validation
 
-Before writing any file, Focal validates that the resolved file path is within `/tmp/focal/repos/`. This prevents path traversal attacks where a crafted request could write outside the expected tree.
+Before writing any file, Focal validates that the resolved file path is within the allowed root directory. In remote mode this is `/tmp/focal/repos/`; in local mode it is the local Git root. This prevents path traversal attacks where a crafted request could write outside the expected tree.
 
 ### Input validation
 
@@ -113,7 +113,7 @@ There are no GitHub API calls. All interaction is over Git HTTPS.
 
 | Scenario | Behavior |
 |----------|----------|
-| `GITHUB_REPOS` is not set | Focal starts with an empty board and logs a warning |
+| `GITHUB_REPOS` is not set | Focal runs in local mode — uses the current Git working tree |
 | `GITHUB_TOKEN` is not set | Clone/push fails; board shows read-only local data if repos are already cloned |
 | Token lacks permissions on a repo | That repo is skipped; other repos load normally |
 | Push fails (e.g. branch protection) | Error is surfaced in the commit bar UI |

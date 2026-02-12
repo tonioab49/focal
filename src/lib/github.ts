@@ -8,6 +8,30 @@ const REPOS_DIR = '/tmp/focal/repos'
 
 export { REPOS_DIR }
 
+export function isLocalMode(): boolean {
+  const raw = process.env.GITHUB_REPOS
+  return !raw || raw.trim() === ''
+}
+
+export function findGitRoot(startDir: string = process.cwd()): string {
+  let dir = path.resolve(startDir)
+  while (true) {
+    if (fs.existsSync(path.join(dir, '.git'))) {
+      return dir
+    }
+    const parent = path.dirname(dir)
+    if (parent === dir) {
+      throw new Error('Not inside a git repository')
+    }
+    dir = parent
+  }
+}
+
+export function getLocalRepo(): Repository {
+  const gitRoot = findGitRoot()
+  return { name: path.basename(gitRoot), path: gitRoot }
+}
+
 function getToken(): string | undefined {
   return process.env.GITHUB_TOKEN
 }
@@ -23,7 +47,6 @@ function remoteUrl(slug: string): string {
 export function parseRepoSlugs(): string[] {
   const raw = process.env.GITHUB_REPOS
   if (!raw) {
-    console.warn('[focal] GITHUB_REPOS is not set — board will be empty')
     return []
   }
   const slugs = raw
@@ -89,6 +112,10 @@ export function syncRepo(slug: string): void {
 }
 
 export function syncAllRepos(): Repository[] {
+  if (isLocalMode()) {
+    return [getLocalRepo()]
+  }
+
   const slugs = parseRepoSlugs()
   const repos: Repository[] = []
 

@@ -108,7 +108,7 @@ Reads and returns the raw Markdown content of a document.
 
 Writes Markdown content to disk. Validates:
 - Path is within a `.focal/docs/` directory
-- Path is within `REPOS_DIR`
+- Path is within the allowed root (local Git root in local mode, `REPOS_DIR` in remote mode)
 
 ### Existing actions
 
@@ -129,7 +129,7 @@ These are added to the existing keyboard shortcuts system and displayed in the `
 
 Same security model as tasks:
 
-- File paths validated to stay within `REPOS_DIR` and `.focal/docs/` subtree
+- File paths validated to stay within the allowed root directory (local Git root or `REPOS_DIR`) and `.focal/docs/` subtree
 - No arbitrary file writes outside the expected directories
 - Content is treated as Markdown text, not executed
 - Git operations happen server-side only

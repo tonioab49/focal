@@ -11,6 +11,8 @@ import {
   parseRepoSlugs,
   repoLocalPath,
   pushRepo,
+  isLocalMode,
+  findGitRoot,
 } from '@/lib/github'
 
 export async function saveTask(formData: {
@@ -24,8 +26,9 @@ export async function saveTask(formData: {
 
   const resolved = path.resolve(filePath)
 
-  // Validate the path is inside repos/ and inside a .focal/tasks/ subtree
-  if (!resolved.startsWith(REPOS_DIR + path.sep)) {
+  // Validate the path is inside a known repo and inside a .focal/tasks/ subtree
+  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR
+  if (!resolved.startsWith(allowedRoot + path.sep)) {
     throw new Error('Invalid file path')
   }
   if (!resolved.includes(`${path.sep}.focal${path.sep}tasks${path.sep}`)) {
@@ -46,18 +49,14 @@ export async function saveTask(formData: {
   revalidatePath('/task')
 }
 
-const LOCAL_FOCAL_DIR = path.join(process.cwd(), '.focal')
-
 export async function saveDoc(formData: { filePath: string; content: string }) {
   const { filePath, content } = formData
 
   const resolved = path.resolve(filePath)
 
-  // Validate the path is inside .focal/docs/ subtree (either in repos or local project)
-  const inRepos = resolved.startsWith(REPOS_DIR + path.sep)
-  const inLocal = resolved.startsWith(LOCAL_FOCAL_DIR + path.sep)
-
-  if (!inRepos && !inLocal) {
+  // Validate the path is inside .focal/docs/ subtree
+  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR
+  if (!resolved.startsWith(allowedRoot + path.sep)) {
     throw new Error('Invalid file path')
   }
   if (!resolved.includes(`${path.sep}.focal${path.sep}docs${path.sep}`)) {
@@ -71,6 +70,21 @@ export async function saveDoc(formData: { filePath: string; content: string }) {
 }
 
 export async function getUncommittedFiles(): Promise<string[]> {
+  if (isLocalMode()) {
+    const gitRoot = findGitRoot()
+    const repoName = path.basename(gitRoot)
+    try {
+      const output = execSync('git status --porcelain .focal/', {
+        cwd: gitRoot,
+        encoding: 'utf-8',
+      }).trim()
+      if (!output) return []
+      return output.split('\n').map((line) => `${repoName}/${line.slice(3)}`)
+    } catch {
+      return []
+    }
+  }
+
   const slugs = parseRepoSlugs()
   const dirty: string[] = []
 
@@ -80,7 +94,6 @@ export async function getUncommittedFiles(): Promise<string[]> {
     if (!fs.existsSync(focalDir)) continue
 
     try {
-      // Check both tasks and docs
       const output = execSync('git status --porcelain .focal/', {
         cwd: repoPath,
         encoding: 'utf-8',
@@ -100,6 +113,31 @@ export async function getUncommittedFiles(): Promise<string[]> {
 }
 
 export async function commitChanges(): Promise<{ message: string }> {
+  if (isLocalMode()) {
+    const gitRoot = findGitRoot()
+    try {
+      const output = execSync('git status --porcelain .focal/', {
+        cwd: gitRoot,
+        encoding: 'utf-8',
+      }).trim()
+      if (!output) {
+        return { message: 'No changes to commit' }
+      }
+      execSync('git add .focal/', { cwd: gitRoot })
+      execSync('git commit -m "Update focal content"', { cwd: gitRoot })
+      try {
+        pushRepo(gitRoot)
+      } catch {
+        // No remote configured — non-fatal
+      }
+      revalidatePath('/')
+      return { message: 'Committed changes' }
+    } catch {
+      revalidatePath('/')
+      return { message: 'Failed to commit changes' }
+    }
+  }
+
   const slugs = parseRepoSlugs()
   let committed = 0
   const errors: string[] = []
@@ -110,7 +148,6 @@ export async function commitChanges(): Promise<{ message: string }> {
     if (!fs.existsSync(focalDir)) continue
 
     try {
-      // Check for any changes in .focal/
       const output = execSync('git status --porcelain .focal/', {
         cwd: repoPath,
         encoding: 'utf-8',
