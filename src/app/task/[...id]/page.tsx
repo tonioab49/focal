@@ -13,7 +13,7 @@ export default function TaskEditPage({ params }: { params: { id: string[] } }) {
 
   return (
     <div className="h-full p-6">
-      <div className="max-w-2xl">
+      <div className="mx-auto max-w-[750px]">
         <TaskEditForm task={task} />
       </div>
     </div>

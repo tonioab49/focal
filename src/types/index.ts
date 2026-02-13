@@ -10,6 +10,7 @@ export interface Task {
   assignee?: string
   repository: string
   filePath: string
+  body: string
 }
 
 export interface Repository {

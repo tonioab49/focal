@@ -33,7 +33,7 @@ function findMdxFiles(dir: string): string[] {
 
 function parseTaskFile(filePath: string, repoName: string): Task | null {
   const raw = fs.readFileSync(filePath, 'utf-8')
-  const { data } = matter(raw)
+  const { data, content } = matter(raw)
 
   if (!data.title || !data.status) return null
   if (!VALID_STATUSES.includes(data.status)) return null
@@ -51,6 +51,7 @@ function parseTaskFile(filePath: string, repoName: string): Task | null {
     assignee: typeof data.assignee === 'string' ? data.assignee : undefined,
     repository: repoName,
     filePath,
+    body: content.trim(),
   }
 }
 

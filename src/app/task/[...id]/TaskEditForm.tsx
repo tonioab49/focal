@@ -3,9 +3,22 @@
 import { useState, useTransition, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import TiptapLink from '@tiptap/extension-link'
+import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
+import { marked } from 'marked'
+import TurndownService from 'turndown'
 import type { Task, TaskStatus, TaskPriority } from '@/types'
 import { saveTask } from '@/app/actions'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
+import { EditorToolbar } from '@/components/EditorToolbar'
+
+const turndown = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced',
+})
 
 const STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To Do' },
@@ -31,24 +44,56 @@ export function TaskEditForm({ task }: { task: Task }) {
   )
   const [assignee, setAssignee] = useState(task.assignee ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [hasBodyChanges, setHasBodyChanges] = useState(false)
+
+  const htmlContent = useMemo(() => {
+    return marked.parse(task.body || '', { async: false }) as string
+  }, [task.body])
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TiptapLink.configure({ openOnClick: false }),
+      Underline,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    ],
+    content: htmlContent,
+    editable: true,
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px]',
+      },
+    },
+    onUpdate: () => {
+      setHasBodyChanges(true)
+    },
+  })
 
   const handleSave = useCallback(() => {
     setError(null)
     startTransition(async () => {
       try {
+        let body: string | undefined
+        if (editor && hasBodyChanges) {
+          const html = editor.getHTML()
+          body = turndown.turndown(html)
+        }
         await saveTask({
           filePath: task.filePath,
           title,
           status,
           priority,
           assignee,
+          body,
         })
+        setHasBodyChanges(false)
         router.push('/')
       } catch {
         setError('Failed to save task')
       }
     })
-  }, [task.filePath, title, status, priority, assignee, router])
+  }, [task.filePath, title, status, priority, assignee, editor, hasBodyChanges, router])
 
   const handleBack = useCallback(() => {
     router.push('/')
@@ -165,6 +210,23 @@ export function TaskEditForm({ task }: { task: Task }) {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+
+          {editor && (
+            <EditorToolbar
+              editor={editor}
+              className="mb-0 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 px-2 py-1.5"
+            />
+          )}
+
+          <div className="rounded-b-md border border-gray-300 px-3 py-2">
+            <EditorContent editor={editor} />
+          </div>
+        </div>
+
         <div className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2">
           <span className="text-xs font-medium text-gray-500">File</span>
           <p className="text-sm text-gray-700 font-mono mt-0.5 break-all">
@@ -193,3 +255,4 @@ export function TaskEditForm({ task }: { task: Task }) {
     </div>
   )
 }
+

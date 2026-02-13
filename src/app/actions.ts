@@ -21,8 +21,9 @@ export async function saveTask(formData: {
   status: TaskStatus
   priority: TaskPriority | ''
   assignee: string
+  body?: string
 }) {
-  const { filePath, title, status, priority, assignee } = formData
+  const { filePath, title, status, priority, assignee, body } = formData
 
   const resolved = path.resolve(filePath)
 
@@ -36,13 +37,14 @@ export async function saveTask(formData: {
   }
 
   const raw = fs.readFileSync(resolved, 'utf-8')
-  const { content } = matter(raw)
+  const { content: existingContent } = matter(raw)
 
   const frontmatter: Record<string, string> = { title, status }
   if (priority) frontmatter.priority = priority
   if (assignee) frontmatter.assignee = assignee
 
-  const newContent = matter.stringify(content, frontmatter)
+  const contentToWrite = body !== undefined ? body : existingContent
+  const newContent = matter.stringify(contentToWrite, frontmatter)
   fs.writeFileSync(resolved, newContent, 'utf-8')
 
   revalidatePath('/')
