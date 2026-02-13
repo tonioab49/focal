@@ -33,4 +33,4 @@
 3.  You use git blame on the _documentation_ file itself to see exactly who approved that architectural shift and when.**The Difference:** Documentation isn't a "second-class citizen" that lives in a browser; it's a **version-controlled ledger** of your team's collective intelligence.
     
 
-Adding a piece of text for testing, this is a test, coming from Zed
+Adding a piece of text for testing, this is a test, coming from Zed, l

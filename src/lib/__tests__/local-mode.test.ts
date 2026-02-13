@@ -170,6 +170,46 @@ describe('Local mode', () => {
     })
   })
 
+  describe('getGitStatus() in local mode', () => {
+    it('detects staged doc files (M  status)', async () => {
+      // Modify and stage a doc file — git status shows "M  .focal/docs/..."
+      const docFile = path.join(tmpDir, '.focal', 'docs', 'test-doc.md')
+      fs.writeFileSync(docFile, '# Staged Doc\n\nStaged content\n')
+      execSync('git add .focal/docs/test-doc.md', {
+        cwd: tmpDir,
+        stdio: 'pipe',
+      })
+
+      const { getGitStatus } = await import('@/app/actions')
+      const status = await getGitStatus()
+      const docFiles = status.files.filter((f) => f.kind === 'doc')
+      expect(docFiles).toHaveLength(1)
+      expect(docFiles[0].title).toBe('Test Doc')
+      expect(docFiles[0].status).toBe('modified')
+    })
+
+    it('detects both staged and unstaged files', async () => {
+      // Stage a doc, modify a task (unstaged)
+      const docFile = path.join(tmpDir, '.focal', 'docs', 'test-doc.md')
+      fs.writeFileSync(docFile, '# Staged\n')
+      execSync('git add .focal/docs/test-doc.md', {
+        cwd: tmpDir,
+        stdio: 'pipe',
+      })
+
+      const taskFile = path.join(tmpDir, '.focal', 'tasks', 'test-task.mdx')
+      fs.writeFileSync(
+        taskFile,
+        '---\ntitle: Unstaged Task\nstatus: todo\n---\n',
+      )
+
+      const { getGitStatus } = await import('@/app/actions')
+      const status = await getGitStatus()
+      expect(status.files).toHaveLength(2)
+      expect(status.files.map((f) => f.kind).sort()).toEqual(['doc', 'task'])
+    })
+  })
+
   describe('getUncommittedFiles() in local mode', () => {
     it('returns empty when no changes exist', async () => {
       const { getUncommittedFiles } = await import('@/app/actions')

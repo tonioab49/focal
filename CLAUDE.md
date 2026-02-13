@@ -10,3 +10,7 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 - React
 - Tailwind CSS
 - Yarn package manager
+
+## Rules to follow
+
+- Always read the docs in .focal/docs when you are missing context

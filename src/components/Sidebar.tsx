@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { GitStatusIndicator } from './GitStatusIndicator'
 import type { DocNode } from '@/lib/docs'
+import type { GitStatus } from '@/app/actions'
 
 const NAV_ITEMS = [{ href: '/', label: 'Tasks', icon: '◫' }]
 
@@ -10,10 +12,12 @@ export function Sidebar({
   open,
   onClose,
   docTree,
+  gitStatus,
 }: {
   open: boolean
   onClose: () => void
   docTree: DocNode[]
+  gitStatus: GitStatus
 }) {
   const pathname = usePathname()
 
@@ -37,6 +41,9 @@ export function Sidebar({
           <Link href="/" className="text-lg font-semibold text-gray-900">
             Focal
           </Link>
+          <div className="ml-auto">
+            <GitStatusIndicator gitStatus={gitStatus} />
+          </div>
         </div>
 
         <nav className="h-[calc(100%-3.5rem)] overflow-y-auto p-3">

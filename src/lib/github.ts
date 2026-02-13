@@ -8,6 +8,9 @@ const REPOS_DIR = '/tmp/focal/repos'
 
 export { REPOS_DIR }
 
+// Track which repos have already been synced this process lifetime
+const syncedRepos = new Set<string>()
+
 export function isLocalMode(): boolean {
   const raw = process.env.GITHUB_REPOS
   return !raw || raw.trim() === ''
@@ -83,10 +86,18 @@ function cloneRepo(slug: string): void {
 function pullRepo(slug: string): void {
   const dest = repoLocalPath(slug)
   try {
-    execSync('git pull --ff-only', {
+    execSync('git fetch origin', {
       cwd: dest,
       stdio: 'pipe',
       timeout: 30_000,
+    })
+    const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+      cwd: dest,
+      stdio: 'pipe',
+    }).toString().trim()
+    execSync(`git reset --hard origin/${branch}`, {
+      cwd: dest,
+      stdio: 'pipe',
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -96,19 +107,22 @@ function pullRepo(slug: string): void {
       fs.rmSync(dest, { recursive: true, force: true })
       cloneRepo(slug)
     } else {
-      // pull failed (e.g. diverged) — not fatal, we still have local data
-      console.warn(`[focal] git pull failed for ${slug}`)
+      console.warn(`[focal] git pull failed for ${slug}: ${msg}`)
     }
   }
 }
 
 export function syncRepo(slug: string): void {
+  if (syncedRepos.has(slug)) return
+
   const dest = repoLocalPath(slug)
   if (fs.existsSync(path.join(dest, '.git'))) {
     pullRepo(slug)
   } else {
     cloneRepo(slug)
   }
+
+  syncedRepos.add(slug)
 }
 
 export function syncAllRepos(): Repository[] {

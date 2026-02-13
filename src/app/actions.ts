@@ -69,6 +69,121 @@ export async function saveDoc(formData: { filePath: string; content: string }) {
   revalidatePath('/docs')
 }
 
+export type GitFileStatus = {
+  path: string
+  title: string
+  kind: 'task' | 'doc'
+  status: 'new' | 'modified'
+}
+export type GitStatus = { localMode: boolean; files: GitFileStatus[] }
+
+function slugToTitle(slug: string): string {
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function resolveTitle(
+  filePath: string,
+  repoRoot: string,
+): { title: string; kind: 'task' | 'doc' } {
+  const relPath = filePath.replace(/^\.focal\//, '')
+  const isTask = relPath.startsWith('tasks/')
+
+  const absPath = path.join(repoRoot, filePath)
+  if (isTask && fs.existsSync(absPath)) {
+    try {
+      const raw = fs.readFileSync(absPath, 'utf-8')
+      const { data } = matter(raw)
+      if (data.title) return { title: data.title, kind: 'task' }
+    } catch {
+      // fall through to filename-based title
+    }
+  }
+
+  // Docs (and fallback): derive title from filename like the sidebar does
+  const basename = path.basename(filePath).replace(/\.\w+$/, '')
+  return { title: slugToTitle(basename), kind: isTask ? 'task' : 'doc' }
+}
+
+function extractPorcelainFile(line: string): string | null {
+  // git status --porcelain format: XY<space>PATH (3 chars then path)
+  // Extract the .focal/ path regardless of prefix length to handle
+  // both staged (M ) and unstaged ( M) statuses reliably.
+  const idx = line.indexOf('.focal/')
+  if (idx === -1) return null
+  return line.slice(idx)
+}
+
+function parseGitPorcelain(
+  output: string,
+  prefix: string,
+  repoRoot: string,
+): GitFileStatus[] {
+  if (!output) return []
+  return output
+    .split('\n')
+    .filter((line) => {
+      const file = extractPorcelainFile(line)
+      return (
+        file !== null &&
+        (file.startsWith('.focal/docs/') || file.startsWith('.focal/tasks/'))
+      )
+    })
+    .map((line) => {
+      const file = extractPorcelainFile(line)!
+      const { title, kind } = resolveTitle(file, repoRoot)
+      return {
+        path: `${prefix}/${file}`,
+        title,
+        kind,
+        status: line.startsWith('??')
+          ? ('new' as const)
+          : ('modified' as const),
+      }
+    })
+}
+
+export async function getGitStatus(): Promise<GitStatus> {
+  const local = isLocalMode()
+
+  if (local) {
+    const gitRoot = findGitRoot()
+    const repoName = path.basename(gitRoot)
+    try {
+      const output = execSync('git status --porcelain .focal/', {
+        cwd: gitRoot,
+        encoding: 'utf-8',
+      }).trim()
+      return {
+        localMode: true,
+        files: parseGitPorcelain(output, repoName, gitRoot),
+      }
+    } catch {
+      return { localMode: true, files: [] }
+    }
+  }
+
+  const slugs = parseRepoSlugs()
+  const files: GitFileStatus[] = []
+
+  for (const slug of slugs) {
+    const repoPath = repoLocalPath(slug)
+    const focalDir = path.join(repoPath, '.focal')
+    if (!fs.existsSync(focalDir)) continue
+
+    try {
+      const output = execSync('git status --porcelain .focal/', {
+        cwd: repoPath,
+        encoding: 'utf-8',
+      }).trim()
+      files.push(...parseGitPorcelain(output, slug, repoPath))
+    } catch {
+      // Not a git repo or git not available — skip
+    }
+  }
+
+  return { localMode: false, files }
+}
+
 export async function getUncommittedFiles(): Promise<string[]> {
   if (isLocalMode()) {
     const gitRoot = findGitRoot()

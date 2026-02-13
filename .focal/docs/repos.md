@@ -21,7 +21,7 @@ When `GITHUB_REPOS` is set to one or more `owner/repo` slugs, Focal clones those
 GITHUB_REPOS=axios/axios,curl/curl,psf/requests
 ```
 
-Repositories are shallow-cloned on first access and pulled on subsequent loads. A `GITHUB_TOKEN` is required for authentication. See the [GitHub Integration](github) doc for details.
+Repositories are shallow-cloned on first access. On startup, each repo is hard-reset to match the remote (`git fetch origin && git reset --hard origin/<branch>`), ensuring a fresh state. **Syncing only happens once per server process** — subsequent page loads reuse the local clone without pulling, so edits made through the UI are preserved until the server restarts. A `GITHUB_TOKEN` is required for authentication. See the [GitHub Integration](github) doc for details.
 
 ## How the mode is determined
 

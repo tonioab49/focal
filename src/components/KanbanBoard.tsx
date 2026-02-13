@@ -106,11 +106,11 @@ export function KanbanBoard({ tasks }: { tasks: Task[] }) {
   )
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:max-w-[1548px]">
       {COLUMNS.map((col, ci) => {
         const columnTasks = columns[ci]
         return (
-          <div key={col.status} className="flex flex-col gap-3">
+          <div key={col.status} className="flex flex-col gap-3 md:max-w-[500px]">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-gray-700">
                 {col.label}

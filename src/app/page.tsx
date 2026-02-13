@@ -1,13 +1,10 @@
 import { KanbanBoard } from '@/components/KanbanBoard'
-import { CommitBar } from '@/components/CommitBar'
 import { loadTasks } from '@/lib'
-import { getUncommittedFiles } from './actions'
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const tasks = loadTasks()
-  const dirtyFiles = await getUncommittedFiles()
 
   return (
     <div className="h-full p-6">
@@ -28,11 +25,6 @@ export default async function Home() {
         </p>
       </div>
       <KanbanBoard tasks={tasks} />
-      {dirtyFiles.length > 0 && (
-        <div className="mt-6">
-          <CommitBar dirtyFiles={dirtyFiles} />
-        </div>
-      )}
     </div>
   )
 }

@@ -38,7 +38,7 @@ No other permissions are required. Focal does not interact with issues, pull req
 
 ### 1. Clone / sync
 
-On startup (or when the board loads), Focal ensures each configured repository is cloned locally into `/tmp/focal/repos/<owner>/<repo>`. If a repo is already cloned, Focal pulls the latest changes from the default branch.
+On startup, Focal ensures each configured repository is cloned locally into `/tmp/focal/repos/<owner>/<repo>`. If a repo is already cloned, Focal does a hard reset to match the remote (`git fetch origin && git reset --hard origin/<branch>`), ensuring a clean slate. This sync happens **once per server process** — subsequent page loads skip the pull so that edits made through the UI are preserved until the server restarts.
 
 ```
 /tmp/focal/repos/

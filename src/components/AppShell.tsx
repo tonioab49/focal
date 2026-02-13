@@ -2,15 +2,19 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { Sidebar } from './Sidebar'
+import { GitStatusIndicator } from './GitStatusIndicator'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
 import type { DocNode } from '@/lib/docs'
+import type { GitStatus } from '@/app/actions'
 
 export function AppShell({
   children,
   docTree,
+  gitStatus,
 }: {
   children: React.ReactNode
   docTree: DocNode[]
+  gitStatus: GitStatus
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -23,7 +27,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar open={sidebarOpen} onClose={closeSidebar} docTree={docTree} />
+      <Sidebar open={sidebarOpen} onClose={closeSidebar} docTree={docTree} gitStatus={gitStatus} />
 
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
@@ -50,6 +54,9 @@ export function AppShell({
           <span className="ml-3 text-lg font-semibold text-gray-900">
             Focal
           </span>
+          <div className="ml-auto">
+            <GitStatusIndicator gitStatus={gitStatus} />
+          </div>
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>
