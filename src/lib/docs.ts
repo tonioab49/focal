@@ -67,12 +67,12 @@ function scanDocsDir(
   return nodes
 }
 
-export function loadDocTree(): DocNode[] {
+export function loadDocTree(repoName?: string): DocNode[] {
   const repos = syncAllRepos()
   const allDocs: DocNode[] = []
 
-  // Scan GitHub repos
   for (const repo of repos) {
+    if (repoName && repo.name !== repoName) continue
     const docsDir = path.join(repo.path, '.focal', 'docs')
     if (!fs.existsSync(docsDir)) continue
 

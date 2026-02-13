@@ -7,7 +7,7 @@ import { commitChanges } from '@/app/actions'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
 import type { GitStatus } from '@/app/actions'
 
-export function GitStatusIndicator({ gitStatus }: { gitStatus: GitStatus }) {
+export function GitStatusIndicator({ gitStatus, selectedRepo }: { gitStatus: GitStatus; selectedRepo?: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -24,11 +24,11 @@ export function GitStatusIndicator({ gitStatus }: { gitStatus: GitStatus }) {
   const handleCommit = useCallback(() => {
     if (isPending || gitStatus.localMode) return
     startTransition(async () => {
-      const res = await commitChanges()
+      const res = await commitChanges(selectedRepo)
       setResult(res.message)
       router.refresh()
     })
-  }, [isPending, gitStatus.localMode, router])
+  }, [isPending, gitStatus.localMode, selectedRepo, router])
 
   useKeyboardShortcuts(
     useMemo(
@@ -56,16 +56,14 @@ export function GitStatusIndicator({ gitStatus }: { gitStatus: GitStatus }) {
             ? 'text-amber-700 hover:bg-amber-50 cursor-pointer'
             : 'text-gray-400 cursor-default'
         }`}
-        title={hasDirty ? `${fileCount} uncommitted` : 'No uncommitted changes'}
+        title={hasDirty ? `${fileCount} uncommitted` : 'No changes to commit'}
       >
         <span
           className={`h-2 w-2 rounded-full ${hasDirty ? 'bg-amber-500' : 'bg-gray-300'}`}
         />
-        {hasDirty && (
-          <span>
-            {fileCount} uncommitted
-          </span>
-        )}
+        <span>
+          {hasDirty ? `${fileCount} uncommitted` : 'No changes'}
+        </span>
       </button>
 
       {open && createPortal(

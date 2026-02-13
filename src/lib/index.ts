@@ -55,11 +55,12 @@ function parseTaskFile(filePath: string, repoName: string): Task | null {
   }
 }
 
-export function loadTasks(): Task[] {
+export function loadTasks(repoName?: string): Task[] {
   const repos = syncAllRepos()
   const tasks: Task[] = []
 
   for (const repo of repos) {
+    if (repoName && repo.name !== repoName) continue
     const tasksDir = path.join(repo.path, '.focal', 'tasks')
     if (!fs.existsSync(tasksDir)) continue
 

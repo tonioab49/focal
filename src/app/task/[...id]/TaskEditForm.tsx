@@ -118,8 +118,6 @@ export function TaskEditForm({ task }: { task: Task }) {
         >
           &larr; Back
         </Link>
-        <span className="text-sm text-gray-300">/</span>
-        <span className="text-sm text-gray-500">{task.repository}</span>
         <span className="ml-auto flex items-center gap-2 text-xs text-gray-400">
           <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
             Esc

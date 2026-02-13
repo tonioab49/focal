@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { GitStatusIndicator } from './GitStatusIndicator'
+import { RepoSelector } from './RepoSelector'
 import type { DocNode } from '@/lib/docs'
 import type { GitStatus } from '@/app/actions'
 
@@ -13,11 +14,15 @@ export function Sidebar({
   onClose,
   docTree,
   gitStatus,
+  repos,
+  selectedRepo,
 }: {
   open: boolean
   onClose: () => void
   docTree: DocNode[]
   gitStatus: GitStatus
+  repos: string[]
+  selectedRepo: string
 }) {
   const pathname = usePathname()
 
@@ -42,11 +47,15 @@ export function Sidebar({
             Focal
           </Link>
           <div className="ml-auto">
-            <GitStatusIndicator gitStatus={gitStatus} />
+            <RepoSelector repos={repos} selectedRepo={selectedRepo} localMode={gitStatus.localMode} />
           </div>
         </div>
 
-        <nav className="h-[calc(100%-3.5rem)] overflow-y-auto p-3">
+        <div className="border-b border-gray-200 px-4 py-2">
+          <GitStatusIndicator gitStatus={gitStatus} selectedRepo={selectedRepo} />
+        </div>
+
+        <nav className="h-[calc(100%-3.5rem-2.5rem)] overflow-y-auto p-3">
           <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive =

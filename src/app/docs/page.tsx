@@ -1,10 +1,15 @@
 import { redirect } from "next/navigation";
 import { loadDocTree, flattenDocTree } from "@/lib/docs";
+import { getSelectedRepo, getRepoList } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
-export default function DocsIndexPage() {
-  const tree = loadDocTree();
+export default async function DocsIndexPage() {
+  const repos = await getRepoList();
+  const selectedRepo = await getSelectedRepo();
+  const activeRepo = selectedRepo && repos.includes(selectedRepo) ? selectedRepo : repos[0];
+
+  const tree = loadDocTree(activeRepo);
   const flat = flattenDocTree(tree);
 
   if (flat.length > 0) {

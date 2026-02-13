@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Sidebar } from './Sidebar'
 import { GitStatusIndicator } from './GitStatusIndicator'
+import { RepoSelector } from './RepoSelector'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
 import type { DocNode } from '@/lib/docs'
 import type { GitStatus } from '@/app/actions'
@@ -11,10 +12,14 @@ export function AppShell({
   children,
   docTree,
   gitStatus,
+  repos,
+  selectedRepo,
 }: {
   children: React.ReactNode
   docTree: DocNode[]
   gitStatus: GitStatus
+  repos: string[]
+  selectedRepo: string
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -27,7 +32,14 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar open={sidebarOpen} onClose={closeSidebar} docTree={docTree} gitStatus={gitStatus} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={closeSidebar}
+        docTree={docTree}
+        gitStatus={gitStatus}
+        repos={repos}
+        selectedRepo={selectedRepo}
+      />
 
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
@@ -51,11 +63,14 @@ export function AppShell({
               />
             </svg>
           </button>
-          <span className="ml-3 text-lg font-semibold text-gray-900">
-            Focal
-          </span>
+          <div className="ml-3 flex items-center gap-2">
+            <span className="text-lg font-semibold text-gray-900">Focal</span>
+            {repos.length > 1 && (
+              <RepoSelector repos={repos} selectedRepo={selectedRepo} />
+            )}
+          </div>
           <div className="ml-auto">
-            <GitStatusIndicator gitStatus={gitStatus} />
+            <GitStatusIndicator gitStatus={gitStatus} selectedRepo={selectedRepo} />
           </div>
         </header>
 

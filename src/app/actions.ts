@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process'
 import path from 'node:path'
 import matter from 'gray-matter'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 import type { TaskPriority, TaskStatus } from '@/types'
 import {
   REPOS_DIR,
@@ -13,7 +14,26 @@ import {
   pushRepo,
   isLocalMode,
   findGitRoot,
+  syncAllRepos,
 } from '@/lib/github'
+
+const REPO_COOKIE = 'focal-repo'
+
+export async function setSelectedRepo(repo: string) {
+  const cookieStore = await cookies()
+  cookieStore.set(REPO_COOKIE, repo, { path: '/', maxAge: 60 * 60 * 24 * 365 })
+  revalidatePath('/')
+}
+
+export async function getSelectedRepo(): Promise<string | undefined> {
+  const cookieStore = await cookies()
+  return cookieStore.get(REPO_COOKIE)?.value
+}
+
+export async function getRepoList(): Promise<string[]> {
+  const repos = syncAllRepos()
+  return repos.map((r) => r.name)
+}
 
 export async function saveTask(formData: {
   filePath: string
@@ -144,7 +164,7 @@ function parseGitPorcelain(
     })
 }
 
-export async function getGitStatus(): Promise<GitStatus> {
+export async function getGitStatus(repoFilter?: string): Promise<GitStatus> {
   const local = isLocalMode()
 
   if (local) {
@@ -168,6 +188,7 @@ export async function getGitStatus(): Promise<GitStatus> {
   const files: GitFileStatus[] = []
 
   for (const slug of slugs) {
+    if (repoFilter && slug !== repoFilter) continue
     const repoPath = repoLocalPath(slug)
     const focalDir = path.join(repoPath, '.focal')
     if (!fs.existsSync(focalDir)) continue
@@ -229,7 +250,7 @@ export async function getUncommittedFiles(): Promise<string[]> {
   return dirty
 }
 
-export async function commitChanges(): Promise<{ message: string }> {
+export async function commitChanges(repoFilter?: string): Promise<{ message: string }> {
   if (isLocalMode()) {
     const gitRoot = findGitRoot()
     try {
@@ -260,6 +281,7 @@ export async function commitChanges(): Promise<{ message: string }> {
   const errors: string[] = []
 
   for (const slug of slugs) {
+    if (repoFilter && slug !== repoFilter) continue
     const repoPath = repoLocalPath(slug)
     const focalDir = path.join(repoPath, '.focal')
     if (!fs.existsSync(focalDir)) continue

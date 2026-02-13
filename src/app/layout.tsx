@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { AppShell } from '@/components/AppShell'
 import { ShortcutHelp } from '@/components/ShortcutHelp'
 import { loadDocTree } from '@/lib/docs'
-import { getGitStatus } from './actions'
+import { getGitStatus, getSelectedRepo, getRepoList } from './actions'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,13 +18,23 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const docTree = loadDocTree()
-  const gitStatus = await getGitStatus()
+  const repos = await getRepoList()
+  const selectedRepo = await getSelectedRepo()
+  // Use cookie value if valid, otherwise default to first repo
+  const activeRepo = selectedRepo && repos.includes(selectedRepo) ? selectedRepo : repos[0]
+
+  const docTree = loadDocTree(activeRepo)
+  const gitStatus = await getGitStatus(activeRepo)
 
   return (
     <html lang="en">
       <body>
-        <AppShell docTree={docTree} gitStatus={gitStatus}>
+        <AppShell
+          docTree={docTree}
+          gitStatus={gitStatus}
+          repos={repos}
+          selectedRepo={activeRepo}
+        >
           {children}
         </AppShell>
         <ShortcutHelp />
