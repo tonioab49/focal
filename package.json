@@ -3,28 +3,38 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "test -f .env.local && set -a && . ./.env.local && set +a; next dev",
-    "dev:bare": "next dev",
+    "dev": "test -f .env.local && set -a && . ./.env.local && set +a; concurrently -k -n next,ws -c blue,green \"next dev\" \"tsx server/hocuspocus.ts\"",
+    "dev:bare": "concurrently -k -n next,ws -c blue,green \"next dev\" \"tsx server/hocuspocus.ts\"",
+    "dev:next": "next dev",
+    "dev:ws": "tsx server/hocuspocus.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently -k \"next start\" \"node server/hocuspocus.js\"",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "docker": "docker build -t focal . && docker run --rm -p 4000:4000 --env-file .env.docker.local focal"
+    "docker": "docker build -t focal . && docker run --rm -p 4000:4000 -p 1236:1236 --env-file .env.docker.local focal"
   },
   "dependencies": {
+    "@hocuspocus/provider": "^3.4.4",
+    "@hocuspocus/server": "^3.4.4",
+    "@tiptap/extension-collaboration": "^3.19.0",
+    "@tiptap/extension-collaboration-caret": "^3.19.0",
     "@tiptap/extension-link": "^3.19.0",
     "@tiptap/extension-text-align": "^3.19.0",
     "@tiptap/extension-underline": "^3.19.0",
     "@tiptap/pm": "^3.19.0",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
+    "@tiptap/y-tiptap": "^3.0.2",
     "gray-matter": "^4.0.3",
+    "linkedom": "^0.18.12",
     "marked": "^17.0.1",
     "next": "^14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "turndown": "^7.2.2"
+    "turndown": "^7.2.2",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.29"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
@@ -32,10 +42,12 @@
     "@types/react-dom": "^18.2.0",
     "@types/turndown": "^5.0.6",
     "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   }

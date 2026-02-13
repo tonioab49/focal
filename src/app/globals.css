@@ -45,3 +45,29 @@
 .prose hr {
     @apply border-gray-300 my-6;
 }
+
+/* Collaboration cursor styles */
+.collaboration-cursor__caret {
+    border-left: 1px solid;
+    border-right: 1px solid;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+}
+
+.collaboration-cursor__label {
+    border-radius: 3px 3px 3px 0;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    left: -1px;
+    line-height: 1;
+    padding: 1px 6px 2px;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+    pointer-events: none;
+}
