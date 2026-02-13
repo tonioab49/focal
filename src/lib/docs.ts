@@ -14,6 +14,14 @@ function slugToTitle(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function isDocFile(name: string): boolean {
+  return name.endsWith('.md') || name.endsWith('.mdx')
+}
+
+function stripDocExtension(name: string): string {
+  return name.replace(/\.(md|mdx)$/, '')
+}
+
 function scanDocsDir(
   dir: string,
   repoName: string,
@@ -52,8 +60,8 @@ function scanDocsDir(
           children,
         })
       }
-    } else if (entry.name.endsWith('.md')) {
-      const name = entry.name.replace(/\.md$/, '')
+    } else if (isDocFile(entry.name)) {
+      const name = stripDocExtension(entry.name)
       const slug = basePath ? `${basePath}/${name}` : name
       nodes.push({
         slug: `${repoName}/${slug}`,

@@ -1,0 +1,50 @@
+- Goal (1–2 lines)
+- Apply sidebar styling fixes requested by user: convert Tasks area to section-title + single Kanban link, reduce vertical spacing in Documentation, and improve visual handling of nested doc folders/files.
+- Keep behavior compatible with current docs slug routing (`/docs/{repo}/{path}`).
+
+- Context / assumptions (bullets)
+- Active file for requested UI behavior is `src/components/Sidebar.tsx`; doc hierarchy source remains `src/lib/docs.ts`.
+- Existing doc tree already supports nested folders via recursive `children` nodes; no parsing changes were required for this task.
+- Sidebar folders are intentionally non-clickable in this UI; doc files remain clickable links.
+- Assumed user wants visual parity for section headers (`TASKS` and `DOCUMENTATION`) using same typographic treatment.
+
+- Decisions made (bullets)
+- Removed icon-based top nav item model and replaced it with explicit `TASKS` section header plus one `Kanban` link.
+- Reduced spacing in documentation block (`mt/pt` reductions, tighter item paddings and list gaps).
+- Kept folder rows non-clickable and gave them a visually distinct style from file links using uppercase, smaller size, and stronger weight.
+- Added slight depth indentation using `12 + depth * 10` px and reused it for both folder and file rows for consistent tree alignment.
+
+- What we tried (bullets)
+- Inspected `src/components/Sidebar.tsx`, `src/lib/docs.ts`, `src/app/layout.tsx`, and `src/app/docs/[...slug]/page.tsx` to confirm data flow and routing.
+- Patched sidebar rendering only; no updates to docs scanning/parsing logic.
+- Ran `yarn -s tsc --noEmit` for sanity check.
+
+- Current state (what works / what’s broken)
+- Works:
+- `TASKS` section now appears as a section title with only one link: `Kanban` to `/`.
+- Documentation section spacing is tighter between heading/items and between rows.
+- Nested docs display with slight indentation and clearer folder-vs-file visual difference.
+- Folder nodes remain non-clickable; file nodes remain clickable.
+- Broken/known issues:
+- Typecheck fails due to pre-existing unrelated error in `src/components/AppShell.tsx:69` (`RepoSelector` requires `localMode` prop but callsite omits it).
+
+- Open questions / unknowns
+- UNKNOWN: exact preferred visual intensity for folder styling (current implementation uses typography difference only, no icon/background).
+- UNKNOWN: whether user wants root-level docs and nested docs to use different indentation baselines.
+- UNKNOWN: whether the `AppShell` type error should be fixed in this same change set.
+
+- Next steps (ranked, with concrete commands or file paths)
+- 1. Visual QA in browser for sidebar density and hierarchy: run `yarn dev`, verify `src/components/Sidebar.tsx` behavior across multiple repos.
+- 2. If requested, tune spacing/indent constants in `src/components/Sidebar.tsx` (`mt-4/pt-3`, `py-1`, `depth * 10`).
+- 3. Fix unrelated typecheck blocker in `src/components/AppShell.tsx:69` by passing `localMode` into `RepoSelector`.
+
+- Artifacts (links/paths: PRs, branches, files touched, docs created)
+- Modified: `src/components/Sidebar.tsx`
+- Created: `.focal/docs/handoffs/2026-02-13/handoff-k3Pq9Lm2.mdx`
+- Validation command: `yarn -s tsc --noEmit` (fails on pre-existing issue outside touched file)
+
+- If we resume: “Start by doing X, then Y” (2–5 bullets)
+- Start by launching app and checking the sidebar in desktop/mobile widths.
+- Then confirm docs trees with at least one nested folder render with expected indentation and non-clickable folder rows.
+- Then decide whether to tweak typography/spacing constants in `src/components/Sidebar.tsx` based on user feedback.
+- Then optionally resolve the unrelated `RepoSelector` prop type error in `src/components/AppShell.tsx`.

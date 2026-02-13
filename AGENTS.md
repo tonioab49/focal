@@ -17,7 +17,7 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 
 ### Handoffs 
 
-- Write a session handoff note in .focal/handoffs using the template below.
+- Write a session handoff note in .focal/docs/handoffs using the template below.
 - Format: YYYY-MM-DD/handoff-xxxx.mdx, with xxxx a random alphanumeric (a-zA-Z0-9) string
 - Keep it under 300–500 words. 
 - Use bullets, no prose.
@@ -27,12 +27,15 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 
 ### Template for handoffs
 
-Goal (1–2 lines)
-Context / assumptions (bullets)
-Decisions made (bullets)
-What we tried (bullets)
-Current state (what works / what’s broken)
-Open questions / unknowns
-Next steps (ranked, with concrete commands or file paths)
-Artifacts (links/paths: PRs, branches, files touched, docs created)
-If we resume: “Start by doing X, then Y” (2–5 bullets)
+```md
+# Goal
+(1–2 lines)
+# Context / assumptions 
+(bullets)
+# Decisions made 
+(bullets)
+# Artifacts 
+(links/paths: PRs, branches, files touched, docs created)
+# If we resume
+“Start by doing X, then Y” (2–5 bullets)
+```

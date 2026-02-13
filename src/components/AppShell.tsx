@@ -66,7 +66,11 @@ export function AppShell({
           <div className="ml-3 flex items-center gap-2">
             <span className="text-lg font-semibold text-gray-900">Focal</span>
             {repos.length > 1 && (
-              <RepoSelector repos={repos} selectedRepo={selectedRepo} />
+              <RepoSelector
+                repos={repos}
+                selectedRepo={selectedRepo}
+                localMode={gitStatus.localMode}
+              />
             )}
           </div>
           <div className="ml-auto">

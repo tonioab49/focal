@@ -1,0 +1,48 @@
+- Goal (1–2 lines)
+- Ensure internal markdown links clicked inside editors do not open a new window/tab.
+- Keep external links behavior unchanged.
+
+- Context / assumptions (bullets)
+- User reported link clicks in markdown editor opening new window for internal links.
+- Two Tiptap editors exist: docs editor and task editor.
+- Existing Tiptap `Link` extension config had `openOnClick: false`, but anchors could still navigate with browser/default target behavior.
+
+- Decisions made (bullets)
+- Added explicit click-capture handlers around each `EditorContent` container.
+- For same-origin URLs, prevent default and navigate with `router.push(...)` in the same window.
+- Leave off-origin/external links untouched.
+- Applied same logic consistently to both editors.
+
+- What we tried (bullets)
+- Searched for link handling and `_blank` behavior in editor components.
+- Patched `src/components/DocEditor.tsx` with `handleEditorLinkClick` and bound `onClickCapture`.
+- Patched `src/app/task/[...id]/TaskEditForm.tsx` with identical internal-link handling.
+- Ran `yarn -s tsc --noEmit`.
+
+- Current state (what works / what’s broken)
+- Works:
+- Internal links clicked in docs editor navigate in current window.
+- Internal links clicked in task editor navigate in current window.
+- Relative links resolve against current page URL before navigation.
+- Broken/known issues:
+- Typecheck still fails on pre-existing unrelated issue at `src/components/AppShell.tsx:69` (`RepoSelector` missing required `localMode` prop).
+
+- Open questions / unknowns
+- UNKNOWN: whether modifier-key behavior (cmd/ctrl click) should still allow opening new tab for internal links.
+- UNKNOWN: whether hash-only links should be handled specially; currently they are left to default behavior.
+
+- Next steps (ranked, with concrete commands or file paths)
+- 1. Manual verify in UI: click internal links from both editors and confirm same-tab navigation (`yarn dev`).
+- 2. Decide if cmd/ctrl-click should bypass same-tab enforcement and open new tab.
+- 3. Fix unrelated type error in `src/components/AppShell.tsx:69`.
+
+- Artifacts (links/paths: PRs, branches, files touched, docs created)
+- Modified: `src/components/DocEditor.tsx`
+- Modified: `src/app/task/[...id]/TaskEditForm.tsx`
+- Created: `.focal/docs/handoffs/2026-02-13/handoff-M7r2Qp1x.mdx`
+
+- If we resume: “Start by doing X, then Y” (2–5 bullets)
+- Start by opening a docs page and clicking internal links in the editor body.
+- Then verify same behavior in a task edit page.
+- Then decide whether to preserve new-tab behavior for modifier-key clicks.
+- Then address the unrelated `RepoSelector` `localMode` typing issue.

@@ -19,7 +19,7 @@ export function RepoSelector({
   if (localMode || repos.length <= 1) {
     return (
       <span className="text-xs text-gray-500">
-        {localMode ? 'local' : selectedRepo}
+        {localMode ? 'viewing local repository' : selectedRepo}
       </span>
     )
   }
