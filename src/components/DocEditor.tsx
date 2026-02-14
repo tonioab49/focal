@@ -37,7 +37,23 @@ export function DocEditor({ filePath, content, title, slug }: DocEditorProps) {
     return [
       ...getBaseExtensions({ collaboration: true }),
       Collaboration.configure({ document: ydocRef.current }),
-      CollaborationCaret.configure({ provider, user }),
+      CollaborationCaret.configure({
+        provider,
+        user,
+        render: (awarenessUser) => {
+          const caret = document.createElement("span");
+          caret.classList.add("collaboration-carets__caret");
+          caret.style.borderColor = awarenessUser.color;
+
+          const label = document.createElement("div");
+          label.classList.add("collaboration-carets__label");
+          label.style.backgroundColor = awarenessUser.color;
+          label.textContent = awarenessUser.id === user.id ? "Me" : awarenessUser.name;
+
+          caret.append(label);
+          return caret;
+        },
+      }),
     ];
   }, [provider, user, ydocRef]);
 
@@ -93,9 +109,9 @@ export function DocEditor({ filePath, content, title, slug }: DocEditorProps) {
                     key={i}
                     className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-semibold text-white"
                     style={{ backgroundColor: u.color }}
-                    title={u.name}
+                    title={u.displayName}
                   >
-                    {u.name.charAt(0)}
+                    {u.displayName.charAt(0)}
                   </div>
                 ))}
               </div>

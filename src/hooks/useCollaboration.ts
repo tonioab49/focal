@@ -6,21 +6,47 @@ const ADJECTIVES = ["Red", "Blue", "Green", "Purple", "Golden", "Silver", "Coral
 const ANIMALS = ["Fox", "Panda", "Owl", "Wolf", "Falcon", "Otter", "Lynx", "Heron", "Raven", "Tiger", "Bear", "Hawk", "Deer", "Crane"];
 const COLORS = ["#e06c75", "#61afef", "#98c379", "#c678dd", "#e5c07b", "#56b6c2", "#be5046", "#d19a66", "#7ec8e3", "#c3a6ff"];
 
-function getOrCreateUser(): { name: string; color: string } {
+export interface CollaborationUser {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface ConnectedUser {
+  id: string;
+  name: string;
+  color: string;
+  displayName: string;
+}
+
+function randomId(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function getOrCreateUser(): CollaborationUser {
   if (typeof window === "undefined") {
-    return { name: "Anonymous", color: COLORS[0] };
+    return { id: "server", name: "Anonymous", color: COLORS[0] };
   }
   const stored = sessionStorage.getItem("focal-collab-user");
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Partial<CollaborationUser>;
+      if (typeof parsed.name === "string" && typeof parsed.color === "string") {
+        const user: CollaborationUser = {
+          id: typeof parsed.id === "string" ? parsed.id : randomId(),
+          name: parsed.name,
+          color: parsed.color,
+        };
+        sessionStorage.setItem("focal-collab-user", JSON.stringify(user));
+        return user;
+      }
     } catch {
       /* regenerate */
     }
   }
   const name = `${ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]} ${ANIMALS[Math.floor(Math.random() * ANIMALS.length)]}`;
   const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-  const user = { name, color };
+  const user: CollaborationUser = { id: randomId(), name, color };
   sessionStorage.setItem("focal-collab-user", JSON.stringify(user));
   return user;
 }
@@ -32,7 +58,7 @@ interface UseCollaborationOptions {
 export function useCollaboration(roomName: string, options?: UseCollaborationOptions) {
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
-  const [connectedUsers, setConnectedUsers] = useState<{ name: string; color: string }[]>([]);
+  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const user = useMemo(() => getOrCreateUser(), []);
 
   const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || "ws://localhost:1236";
@@ -67,11 +93,20 @@ export function useCollaboration(roomName: string, options?: UseCollaborationOpt
 
     const updateUsers = () => {
       const states = awareness.getStates();
-      const users: { name: string; color: string }[] = [];
-      states.forEach((state) => {
-        if (state.user) {
-          users.push(state.user);
-        }
+      const users: ConnectedUser[] = [];
+      states.forEach((state, clientId) => {
+        const stateUser = state.user as Partial<CollaborationUser> | undefined;
+        if (!stateUser) return;
+        const isSelf = clientId === awareness.clientID || stateUser.id === user.id;
+        const name = typeof stateUser.name === "string" ? stateUser.name : "Anonymous";
+        const color = typeof stateUser.color === "string" ? stateUser.color : COLORS[0];
+        const id = typeof stateUser.id === "string" ? stateUser.id : `client-${clientId}`;
+        users.push({
+          id,
+          name,
+          color,
+          displayName: isSelf ? "Me" : name,
+        });
       });
       setConnectedUsers(users);
     };

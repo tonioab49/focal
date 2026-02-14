@@ -1,0 +1,42 @@
+# Goal
+
+- Remove the redundant `handoff-` prefix from all handoff filenames.
+- Update project instructions so future handoffs use the no-prefix naming convention.
+
+# Context / assumptions
+
+- User requested removing `handoff-` because it is repetitive in a handoffs-only directory.
+- Existing handoff names had already been migrated to include summaries and random suffixes.
+- Scope interpreted as all existing files under `.focal/docs/handoffs/**`.
+- Random suffixes were preserved to keep traceability and avoid ambiguity.
+- Summary segments were kept unchanged except for dropping leading `handoff-` where present.
+- UNKNOWN: whether to also backfill or normalize the summary wording itself for older entries.
+
+# Decisions made
+
+- Renamed all files with a basename matching `handoff-*` to remove that prefix only.
+- Updated `AGENTS.md` format rule to `YYYY-MM-DD/[2-3-word-summary]-xxxx.mdx`.
+- Kept existing date folder structure unchanged.
+- Did not modify handoff file contents; filename-only migration plus instructions update.
+
+# Artifacts
+
+- Modified: `AGENTS.md`.
+- Renamed handoff files now present without `handoff-` prefix, including:
+- `.focal/docs/handoffs/2026-02-13/doc-editor-collaboration-Vc3Tk8Qn.mdx`
+- `.focal/docs/handoffs/2026-02-13/internal-link-navigation-M7r2Qp1x.mdx`
+- `.focal/docs/handoffs/2026-02-13/mdx-docs-discovery-a9X2mQ7b.mdx`
+- `.focal/docs/handoffs/2026-02-13/reposelector-typecheck-fix-r8Nw4Kc1.mdx`
+- `.focal/docs/handoffs/2026-02-13/shared-editor-collab-x7kR.mdx`
+- `.focal/docs/handoffs/2026-02-13/sidebar-spacing-polish-k3Pq9Lm2.mdx`
+- `.focal/docs/handoffs/2026-02-14/caret-self-label-m3Qv9LpR.mdx`
+- `.focal/docs/handoffs/2026-02-14/handoff-naming-migration-z9Kp3LmN.mdx` (retained summary term as-is)
+- `.focal/docs/handoffs/2026-02-14/linting-standards-audit-Q4nT8zLm.mdx`
+- `.focal/docs/handoffs/2026-02-14/prettier-baseline-format-R8kP2vQa.mdx`
+- `.focal/docs/handoffs/2026-02-14/prettier-precommit-setup-p7LmN2Qa.mdx`
+
+# If we resume
+
+- Start by deciding whether to also rename `handoff-naming-migration-z9Kp3LmN.mdx` to drop `handoff` from the summary words for strict consistency.
+- Then optionally add a filename pattern check script to prevent regressions.
+- Then run the check in pre-commit or CI once a workflow is added.

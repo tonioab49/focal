@@ -1,0 +1,46 @@
+# Goal
+
+- Migrate all existing handoff filenames to include a concise 2–3 word summary segment.
+- Update project instructions so future handoffs follow the new naming convention consistently.
+
+# Context / assumptions
+
+- User requested new filename structure: `handoff-[2 or 3 word summary]-[random string]`.
+- Existing handoffs were named with only random suffixes (for example `handoff-Vc3Tk8Qn.mdx`).
+- Existing random suffixes were treated as canonical identifiers and preserved during renaming.
+- Renaming scope interpreted as all files currently under `.focal/docs/handoffs/**`.
+- Summary terms were derived from each file’s stated goal/content and normalized to lowercase kebab-case.
+- For older handoffs with non-standard body formatting, summary extraction was based on first actionable bullets in the file.
+- No content edits were required to satisfy the request; change focused on filenames and instructions.
+- UNKNOWN: whether future enforcement should include automatic validation (script/lint rule) for naming format.
+
+# Decisions made
+
+- Chosen final convention in docs: `YYYY-MM-DD/handoff-[2-3-word-summary]-xxxx.mdx`.
+- Kept all original random strings unchanged to retain traceability/history context.
+- Applied concise summaries that remain topic-specific and stable:
+- `doc-editor-collaboration`, `internal-link-navigation`, `mdx-docs-discovery`, `sidebar-spacing-polish`, `reposelector-typecheck-fix`, `shared-editor-collab`, `linting-standards-audit`, `prettier-precommit-setup`, `prettier-baseline-format`, `caret-self-label`.
+- Updated only one rule line in `AGENTS.md` to avoid unintended policy changes.
+- Did not modify unrelated in-progress code changes already present in working tree.
+
+# Artifacts
+
+- Modified: `AGENTS.md` (handoff format rule updated).
+- Renamed files:
+- `.focal/docs/handoffs/2026-02-13/handoff-doc-editor-collaboration-Vc3Tk8Qn.mdx`
+- `.focal/docs/handoffs/2026-02-13/handoff-internal-link-navigation-M7r2Qp1x.mdx`
+- `.focal/docs/handoffs/2026-02-13/handoff-mdx-docs-discovery-a9X2mQ7b.mdx`
+- `.focal/docs/handoffs/2026-02-13/handoff-reposelector-typecheck-fix-r8Nw4Kc1.mdx`
+- `.focal/docs/handoffs/2026-02-13/handoff-shared-editor-collab-x7kR.mdx`
+- `.focal/docs/handoffs/2026-02-13/handoff-sidebar-spacing-polish-k3Pq9Lm2.mdx`
+- `.focal/docs/handoffs/2026-02-14/handoff-caret-self-label-m3Qv9LpR.mdx`
+- `.focal/docs/handoffs/2026-02-14/handoff-linting-standards-audit-Q4nT8zLm.mdx`
+- `.focal/docs/handoffs/2026-02-14/handoff-prettier-baseline-format-R8kP2vQa.mdx`
+- `.focal/docs/handoffs/2026-02-14/handoff-prettier-precommit-setup-p7LmN2Qa.mdx`
+- Added: `.focal/docs/handoffs/2026-02-14/handoff-handoff-naming-migration-z9Kp3LmN.mdx`.
+
+# If we resume
+
+- Start by scanning for any newly created handoffs that still use the old `handoff-xxxx.mdx` pattern.
+- Then optionally add a lightweight check script to flag invalid handoff filenames in CI/pre-commit.
+- Then decide whether to include date/topic indexing docs for easier handoff discovery.

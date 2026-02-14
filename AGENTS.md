@@ -18,7 +18,7 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 ### Handoffs
 
 - Write a session handoff note in .focal/docs/handoffs using the template below.
-- Format: YYYY-MM-DD/handoff-xxxx.mdx, with xxxx a random alphanumeric (a-zA-Z0-9) string
+- Format: YYYY-MM-DD/[2-3-word-summary]-xxxx.mdx, with summary in lowercase kebab-case and xxxx a random alphanumeric (a-zA-Z0-9) string
 - Keep it under 300–500 words.
 - Use bullets, no prose.
 - Include only information that would help resume work later; do not re-explain basics.
