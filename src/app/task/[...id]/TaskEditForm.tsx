@@ -1,24 +1,19 @@
 'use client'
 
-import { useState, useTransition, useMemo, useCallback, type MouseEvent } from 'react'
+import { useState, useTransition, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import TiptapLink from '@tiptap/extension-link'
-import Underline from '@tiptap/extension-underline'
-import TextAlign from '@tiptap/extension-text-align'
-import { marked } from 'marked'
-import TurndownService from 'turndown'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
+import { turndown } from '@/lib/turndown'
+import { getBaseExtensions } from '@/lib/editorExtensions'
+import { useEditorLinkClick } from '@/hooks/useEditorLinkClick'
+import { useCollaboration } from '@/hooks/useCollaboration'
 import type { Task, TaskStatus, TaskPriority } from '@/types'
 import { saveTask } from '@/app/actions'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
 import { EditorToolbar } from '@/components/EditorToolbar'
-
-const turndown = new TurndownService({
-  headingStyle: 'atx',
-  codeBlockStyle: 'fenced',
-})
 
 const STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To Do' },
@@ -46,29 +41,40 @@ export function TaskEditForm({ task }: { task: Task }) {
   const [error, setError] = useState<string | null>(null)
   const [hasBodyChanges, setHasBodyChanges] = useState(false)
 
-  const htmlContent = useMemo(() => {
-    return marked.parse(task.body || '', { async: false }) as string
-  }, [task.body])
+  const { provider, ydocRef, connectedUsers, user, broadcastSave } =
+    useCollaboration(`task:${task.filePath}`, {
+      onSaveBroadcast: () => setHasBodyChanges(false),
+    })
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      TiptapLink.configure({ openOnClick: false }),
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    ],
-    content: htmlContent,
-    editable: true,
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px]',
+  const handleEditorLinkClick = useEditorLinkClick()
+
+  // Build extensions — null until provider is ready
+  const extensions = useMemo(() => {
+    if (!provider || !ydocRef.current) return null
+    return [
+      ...getBaseExtensions({ collaboration: true }),
+      Collaboration.configure({ document: ydocRef.current }),
+      CollaborationCaret.configure({ provider, user }),
+    ]
+  }, [provider, user, ydocRef])
+
+  const editor = useEditor(
+    {
+      extensions: extensions ?? getBaseExtensions(),
+      editable: true,
+      immediatelyRender: false,
+      editorProps: {
+        attributes: {
+          class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px]',
+        },
+      },
+      onUpdate: ({ transaction }) => {
+        if (transaction.getMeta('y-sync$')) return
+        setHasBodyChanges(true)
       },
     },
-    onUpdate: () => {
-      setHasBodyChanges(true)
-    },
-  })
+    [extensions],
+  )
 
   const handleSave = useCallback(() => {
     setError(null)
@@ -88,40 +94,17 @@ export function TaskEditForm({ task }: { task: Task }) {
           body,
         })
         setHasBodyChanges(false)
+        broadcastSave()
         router.push('/')
       } catch {
         setError('Failed to save task')
       }
     })
-  }, [task.filePath, title, status, priority, assignee, editor, hasBodyChanges, router])
+  }, [task.filePath, title, status, priority, assignee, editor, hasBodyChanges, router, broadcastSave])
 
   const handleBack = useCallback(() => {
     router.push('/')
   }, [router])
-
-  const handleEditorLinkClick = useCallback(
-    (event: MouseEvent<HTMLDivElement>) => {
-      const target = event.target as HTMLElement | null
-      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
-      if (!anchor) return
-
-      const href = anchor.getAttribute('href')
-      if (!href || href.startsWith('#')) return
-
-      let url: URL
-      try {
-        url = new URL(href, window.location.href)
-      } catch {
-        return
-      }
-
-      if (url.origin !== window.location.origin) return
-
-      event.preventDefault()
-      router.push(`${url.pathname}${url.search}${url.hash}`)
-    },
-    [router],
-  )
 
   useKeyboardShortcuts(
     useMemo(
@@ -142,7 +125,26 @@ export function TaskEditForm({ task }: { task: Task }) {
         >
           &larr; Back
         </Link>
-        <span className="ml-auto flex items-center gap-2 text-xs text-gray-400">
+
+        {/* Connected users */}
+        {connectedUsers.length > 0 && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex -space-x-1.5">
+              {connectedUsers.slice(0, 5).map((u, i) => (
+                <div
+                  key={i}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-semibold text-white"
+                  style={{ backgroundColor: u.color }}
+                  title={u.name}
+                >
+                  {u.name.charAt(0)}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <span className={`flex items-center gap-2 text-xs text-gray-400 ${connectedUsers.length === 0 ? 'ml-auto' : ''}`}>
           <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
             Esc
           </kbd>

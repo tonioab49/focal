@@ -7,6 +7,7 @@ global.window = dom.window
 global.document = dom.document
 
 import fs from 'node:fs'
+import matter from 'gray-matter'
 import { Server } from '@hocuspocus/server'
 import { getSchema } from '@tiptap/core'
 import { DOMParser as PMDOMParser } from '@tiptap/pm/model'
@@ -30,12 +31,16 @@ const server = new Server({
   quiet: true,
 
   async onLoadDocument({ document, documentName }) {
-    // documentName is the filePath. If the Yjs doc already has content, skip.
+    // documentName is the filePath (or "task:<filePath>" for tasks).
     const fragment = document.getXmlFragment('default')
     if (fragment.length > 0) return
 
+    const isTask = documentName.startsWith('task:')
+    const filePath = isTask ? documentName.slice(5) : documentName
+
     try {
-      const markdown = fs.readFileSync(documentName, 'utf-8')
+      const raw = fs.readFileSync(filePath, 'utf-8')
+      const markdown = isTask ? matter(raw).content : raw
       const html = marked.parse(markdown, { async: false }) as string
 
       // Parse HTML into a DOM, then into a ProseMirror node
