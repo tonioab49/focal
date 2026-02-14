@@ -63,12 +63,13 @@ Documentation is edited using the [Tiptap Simple Editor](https://tiptap.dev/docs
 
 ## Routes
 
-| Route | Description |
-|-------|-------------|
-| `/docs` | Documentation index (redirects to first doc or shows welcome) |
-| `/docs/[...slug]` | View/edit a specific document |
+| Route             | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `/docs`           | Documentation index (redirects to first doc or shows welcome) |
+| `/docs/[...slug]` | View/edit a specific document                                 |
 
 The `[...slug]` catch-all matches the file path relative to `.focal/docs/`, e.g.:
+
 - `/docs/getting-started` → `.focal/docs/getting-started.md`
 - `/docs/guides/setup` → `.focal/docs/guides/setup.md`
 
@@ -93,9 +94,9 @@ Scans all configured repositories for `.focal/docs/` directories and returns a t
 
 ```typescript
 interface DocNode {
-  slug: string;        // URL path segment
-  title: string;       // Display name
-  filePath: string;    // Absolute path on disk
+  slug: string; // URL path segment
+  title: string; // Display name
+  filePath: string; // Absolute path on disk
   children?: DocNode[]; // Subdirectories
 }
 ```
@@ -107,6 +108,7 @@ Reads and returns the raw Markdown content of a document.
 ### `saveDoc(filePath: string, content: string)`
 
 Writes Markdown content to disk. Validates:
+
 - Path is within a `.focal/docs/` directory
 - Path is within the allowed root (local Git root in local mode, `REPOS_DIR` in remote mode)
 
@@ -117,10 +119,10 @@ Writes Markdown content to disk. Validates:
 
 ## Keyboard Shortcuts
 
-| Key | Context | Action |
-|-----|---------|--------|
-| `E` | Doc view | Enter edit mode |
-| `⌘S` | Doc edit | Save document |
+| Key      | Context  | Action                         |
+| -------- | -------- | ------------------------------ |
+| `E`      | Doc view | Enter edit mode                |
+| `⌘S`     | Doc edit | Save document                  |
 | `Escape` | Doc edit | Cancel editing, return to view |
 
 These are added to the existing keyboard shortcuts system and displayed in the `?` help dialog.

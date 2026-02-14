@@ -15,9 +15,9 @@ Only files under `.focal/docs/` and `.focal/tasks/` are tracked. Other files in 
 
 Each changed file is labelled with one of two statuses:
 
-| Badge | Meaning |
-|-------|---------|
-| **new** | The file is untracked by git (newly created) |
+| Badge        | Meaning                                             |
+| ------------ | --------------------------------------------------- |
+| **new**      | The file is untracked by git (newly created)        |
 | **modified** | The file already exists in git and has been changed |
 
 ## Commit & Push (Remote Mode)

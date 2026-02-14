@@ -28,14 +28,14 @@ Add realtime collaborative editing to the DocEditor using Hocuspocus (open-sourc
 
 All free/open-source:
 
-| Package | Purpose |
-|---------|---------|
-| `@hocuspocus/server` | WebSocket collaboration server |
-| `@hocuspocus/provider` | Client-side WebSocket provider |
-| `@tiptap/extension-collaboration` | Yjs ↔ Tiptap binding |
-| `@tiptap/extension-collaboration-caret` | Display remote cursors |
-| `yjs` | CRDT library (peer dep) |
-| `concurrently` (devDep) | Run Next.js + Hocuspocus in parallel |
+| Package                                 | Purpose                              |
+| --------------------------------------- | ------------------------------------ |
+| `@hocuspocus/server`                    | WebSocket collaboration server       |
+| `@hocuspocus/provider`                  | Client-side WebSocket provider       |
+| `@tiptap/extension-collaboration`       | Yjs ↔ Tiptap binding                 |
+| `@tiptap/extension-collaboration-caret` | Display remote cursors               |
+| `yjs`                                   | CRDT library (peer dep)              |
+| `concurrently` (devDep)                 | Run Next.js + Hocuspocus in parallel |
 
 Note: No server-side tiptap or `y-prosemirror` needed — the server is a dumb relay and initial content is handled client-side by tiptap's Collaboration extension.
 
@@ -68,6 +68,7 @@ Major changes to integrate collaboration:
 ### 3. Connected Users Display
 
 In the DocEditor header area (next to the title), show:
+
 - Small colored avatar bubbles (initials or first letter) for each connected user
 - A count badge (e.g., "3 connected")
 - Current user highlighted differently
@@ -75,6 +76,7 @@ In the DocEditor header area (next to the title), show:
 ### 4. Cursor Rendering (CollaborationCaret)
 
 Custom `render` function for the caret extension:
+
 - A colored vertical line at the caret position
 - A small label bubble above showing the username
 - Colors match the user's assigned color
@@ -101,10 +103,10 @@ The Docker build needs to also compile the hocuspocus server. The runner stage r
 
 ### 7. Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `HOCUSPOCUS_PORT` | `1236` | Port for the WebSocket server |
-| `NEXT_PUBLIC_HOCUSPOCUS_URL` | `ws://localhost:1236` | WebSocket URL for the client |
+| Variable                     | Default               | Description                   |
+| ---------------------------- | --------------------- | ----------------------------- |
+| `HOCUSPOCUS_PORT`            | `1236`                | Port for the WebSocket server |
+| `NEXT_PUBLIC_HOCUSPOCUS_URL` | `ws://localhost:1236` | WebSocket URL for the client  |
 
 `NEXT_PUBLIC_` prefix makes it available in client-side code.
 
@@ -134,6 +136,7 @@ The Docker build needs to also compile the hocuspocus server. The runner stage r
 ## Dirty State Tracking
 
 With collaboration, "dirty" means the Yjs document differs from what's on disk. We track this as:
+
 - Any Yjs `onUpdate` that originates from a remote user also sets `hasChanges = true` (since the in-memory state now differs from disk)
 - A save by ANY user clears `hasChanges` for ALL users (via stateless broadcast)
 
@@ -147,15 +150,15 @@ With collaboration, "dirty" means the Yjs document differs from what's on disk. 
 
 ## Files to Create/Modify
 
-| File | Action |
-|------|--------|
-| `server/hocuspocus.ts` | **Create** — WebSocket server |
-| `src/components/DocEditor.tsx` | **Modify** — Add collaboration |
+| File                               | Action                            |
+| ---------------------------------- | --------------------------------- |
+| `server/hocuspocus.ts`             | **Create** — WebSocket server     |
+| `src/components/DocEditor.tsx`     | **Modify** — Add collaboration    |
 | `src/components/CollabCursors.css` | **Create** — Cursor bubble styles |
-| `src/app/globals.css` | **Modify** — Import cursor styles |
-| `package.json` | **Modify** — New deps + scripts |
-| `Dockerfile` | **Modify** — Run both servers |
-| `.env.local` | **Modify** — Add WS env vars |
+| `src/app/globals.css`              | **Modify** — Import cursor styles |
+| `package.json`                     | **Modify** — New deps + scripts   |
+| `Dockerfile`                       | **Modify** — Run both servers     |
+| `.env.local`                       | **Modify** — Add WS env vars      |
 
 ## Risks & Mitigations
 

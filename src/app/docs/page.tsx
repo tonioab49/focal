@@ -21,8 +21,7 @@ export default async function DocsIndexPage() {
       <div className="max-w-3xl">
         <h1 className="text-xl font-semibold text-gray-900">Documentation</h1>
         <p className="mt-2 text-sm text-gray-500">
-          No documentation files found. Create <code>.focal/docs/*.md</code>{" "}
-          files in your repositories to get started.
+          No documentation files found. Create <code>.focal/docs/*.md</code> files in your repositories to get started.
         </p>
       </div>
     </div>

@@ -26,9 +26,9 @@ GITHUB_TOKEN=github_pat_...
 
 The token must have the following permissions on each repository listed in `GITHUB_REPOS`:
 
-| Permission | Access | Reason |
-|------------|--------|--------|
-| Contents | Read and write | Clone repos, read `.focal/tasks/`, push commits |
+| Permission | Access         | Reason                                          |
+| ---------- | -------------- | ----------------------------------------------- |
+| Contents   | Read and write | Clone repos, read `.focal/tasks/`, push commits |
 
 No other permissions are required. Focal does not interact with issues, pull requests, actions, or any other GitHub API surface.
 
@@ -111,10 +111,10 @@ There are no GitHub API calls. All interaction is over Git HTTPS.
 
 ## Error handling
 
-| Scenario | Behavior |
-|----------|----------|
-| `GITHUB_REPOS` is not set | Focal runs in local mode — uses the current Git working tree |
-| `GITHUB_TOKEN` is not set | Clone/push fails; board shows read-only local data if repos are already cloned |
-| Token lacks permissions on a repo | That repo is skipped; other repos load normally |
-| Push fails (e.g. branch protection) | Error is surfaced in the commit bar UI |
+| Scenario                               | Behavior                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_REPOS` is not set              | Focal runs in local mode — uses the current Git working tree                                                  |
+| `GITHUB_TOKEN` is not set              | Clone/push fails; board shows read-only local data if repos are already cloned                                |
+| Token lacks permissions on a repo      | That repo is skipped; other repos load normally                                                               |
+| Push fails (e.g. branch protection)    | Error is surfaced in the commit bar UI                                                                        |
 | Push conflict (remote has new commits) | Focal pulls before pushing; if there's a merge conflict in `.focal/tasks/`, the error is surfaced to the user |

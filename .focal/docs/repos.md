@@ -25,7 +25,7 @@ Repositories are shallow-cloned on first access. On startup, each repo is hard-r
 
 ## How the mode is determined
 
-| `GITHUB_REPOS` value | Mode | Repositories |
-|----------------------|------|-------------|
-| Empty / unset | Local | Single repo from the current Git working tree |
-| `owner/repo,...` | Remote | Cloned GitHub repos in `/tmp/focal/repos/` |
+| `GITHUB_REPOS` value | Mode   | Repositories                                  |
+| -------------------- | ------ | --------------------------------------------- |
+| Empty / unset        | Local  | Single repo from the current Git working tree |
+| `owner/repo,...`     | Remote | Cloned GitHub repos in `/tmp/focal/repos/`    |

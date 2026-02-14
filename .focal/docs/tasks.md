@@ -10,12 +10,12 @@ All Focal data lives inside a `.focal/` directory at the root of each repository
 
 ## Task Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `title` | string | Yes | The task title displayed on the Kanban board |
-| `status` | enum | Yes | Current status: `todo`, `in-progress`, or `done` |
-| `priority` | enum | No | Task priority: `low`, `medium`, `high`, or `urgent` |
-| `assignee` | string | No | Username or email of the person assigned |
+| Property   | Type   | Required | Description                                         |
+| ---------- | ------ | -------- | --------------------------------------------------- |
+| `title`    | string | Yes      | The task title displayed on the Kanban board        |
+| `status`   | enum   | Yes      | Current status: `todo`, `in-progress`, or `done`    |
+| `priority` | enum   | No       | Task priority: `low`, `medium`, `high`, or `urgent` |
+| `assignee` | string | No       | Username or email of the person assigned            |
 
 ## Task Statuses
 

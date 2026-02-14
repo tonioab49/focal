@@ -1,35 +1,23 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
-import { setSelectedRepo } from '@/app/actions'
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { setSelectedRepo } from "@/app/actions";
 
-export function RepoSelector({
-  repos,
-  selectedRepo,
-  localMode,
-}: {
-  repos: string[]
-  selectedRepo: string
-  localMode: boolean
-}) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+export function RepoSelector({ repos, selectedRepo, localMode }: { repos: string[]; selectedRepo: string; localMode: boolean }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   if (localMode || repos.length <= 1) {
-    return (
-      <span className="text-xs text-gray-500">
-        {localMode ? 'viewing local repository' : selectedRepo}
-      </span>
-    )
+    return <span className="text-xs text-gray-500">{localMode ? "viewing local repository" : selectedRepo}</span>;
   }
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const repo = e.target.value
+    const repo = e.target.value;
     startTransition(async () => {
-      await setSelectedRepo(repo)
-      router.refresh()
-    })
+      await setSelectedRepo(repo);
+      router.refresh();
+    });
   }
 
   return (
@@ -45,5 +33,5 @@ export function RepoSelector({
         </option>
       ))}
     </select>
-  )
+  );
 }

@@ -15,11 +15,11 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 
 - Always read the docs in .focal/docs when you are missing context
 
-### Handoffs 
+### Handoffs
 
 - Write a session handoff note in .focal/docs/handoffs using the template below.
 - Format: YYYY-MM-DD/handoff-xxxx.mdx, with xxxx a random alphanumeric (a-zA-Z0-9) string
-- Keep it under 300–500 words. 
+- Keep it under 300–500 words.
 - Use bullets, no prose.
 - Include only information that would help resume work later; do not re-explain basics.
 - If anything is ambiguous or unverified, mark it explicitly as UNKNOWN.
@@ -29,13 +29,22 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 
 ```md
 # Goal
+
 (1–2 lines)
-# Context / assumptions 
+
+# Context / assumptions
+
 (bullets)
-# Decisions made 
+
+# Decisions made
+
 (bullets)
-# Artifacts 
+
+# Artifacts
+
 (links/paths: PRs, branches, files touched, docs created)
+
 # If we resume
+
 “Start by doing X, then Y” (2–5 bullets)
 ```

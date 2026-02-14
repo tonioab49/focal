@@ -1,0 +1,82 @@
+# Goal
+
+- Complete the requested Prettier + pre-commit setup and then execute a one-time repo-wide format pass.
+- Verify the repository remains green for formatting, linting, type checks, and tests.
+
+# Context / assumptions
+
+- User confirmed proceeding with one-time formatting after initial tooling setup.
+- Pre-commit enforcement model remains staged-file based via `lint-staged`.
+- Formatting pass intentionally touched docs, tasks, TS/TSX, CSS, and config files.
+- UNKNOWN: whether commit strategy should be single squash vs split commits (tooling vs mass format).
+- UNKNOWN: whether CI enforcement will be added in a later step.
+
+# Decisions made
+
+- Ran `yarn format` across repository root using configured Prettier rules.
+- Kept previous Prettier/Husky/lint-staged wiring unchanged.
+- Validated post-format quality gates:
+- `yarn format:check` passed.
+- `yarn lint` passed.
+- `yarn typecheck` passed.
+- `yarn test` passed (20 tests).
+
+# Artifacts
+
+- Tooling/config files in effect:
+- `package.json`
+- `.prettierrc.json`
+- `.prettierignore`
+- `.husky/pre-commit`
+- `.husky/_/*`
+- `yarn.lock`
+- Repo files rewritten by Prettier:
+- `.focal/docs/docs.md`
+- `.focal/docs/git-workflow.md`
+- `.focal/docs/github.md`
+- `.focal/docs/realtime-collaboration.md`
+- `.focal/docs/repos.md`
+- `.focal/docs/scratch.md`
+- `.focal/docs/tasks.md`
+- `.focal/tasks/dockerfile-distribution.mdx`
+- `AGENTS.md`
+- `next.config.mjs`
+- `server/hocuspocus.ts`
+- `src/app/actions.ts`
+- `src/app/docs/[...slug]/page.tsx`
+- `src/app/docs/page.tsx`
+- `src/app/globals.css`
+- `src/app/layout.tsx`
+- `src/app/page.tsx`
+- `src/app/task/[...id]/TaskEditForm.tsx`
+- `src/app/task/[...id]/page.tsx`
+- `src/components/AppShell.tsx`
+- `src/components/DocEditor.tsx`
+- `src/components/EditorToolbar.tsx`
+- `src/components/GitStatusIndicator.tsx`
+- `src/components/KanbanBoard.tsx`
+- `src/components/RepoSelector.tsx`
+- `src/components/ShortcutHelp.tsx`
+- `src/components/Sidebar.tsx`
+- `src/components/TaskCard.tsx`
+- `src/hooks/useCollaboration.ts`
+- `src/hooks/useEditorLinkClick.ts`
+- `src/hooks/useKeyboardShortcut.ts`
+- `src/lib/__tests__/local-mode.test.ts`
+- `src/lib/__tests__/remote-sync.test.ts`
+- `src/lib/docs.ts`
+- `src/lib/editorExtensions.ts`
+- `src/lib/github.ts`
+- `src/lib/index.ts`
+- `src/lib/turndown.ts`
+- `src/types/index.ts`
+- `tailwind.config.ts`
+- `tsconfig.json`
+- `vitest.config.ts`
+
+# If we resume
+
+- Start by reviewing the large formatting diff in chunks (docs/tasks first, then source).
+- Commit strategy option A: `chore: add prettier/husky/lint-staged` then `style: apply prettier baseline`.
+- Commit strategy option B: single commit if minimal history granularity is preferred.
+- Add CI workflow to enforce `format:check`, `lint`, `typecheck`, and `test` on PRs.

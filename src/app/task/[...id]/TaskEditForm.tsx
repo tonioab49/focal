@@ -1,62 +1,59 @@
-'use client'
+"use client";
 
-import { useState, useTransition, useMemo, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useEditor, EditorContent } from '@tiptap/react'
-import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCaret from '@tiptap/extension-collaboration-caret'
-import { turndown } from '@/lib/turndown'
-import { getBaseExtensions } from '@/lib/editorExtensions'
-import { useEditorLinkClick } from '@/hooks/useEditorLinkClick'
-import { useCollaboration } from '@/hooks/useCollaboration'
-import type { Task, TaskStatus, TaskPriority } from '@/types'
-import { saveTask } from '@/app/actions'
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcut'
-import { EditorToolbar } from '@/components/EditorToolbar'
+import { useState, useTransition, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useEditor, EditorContent } from "@tiptap/react";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import { turndown } from "@/lib/turndown";
+import { getBaseExtensions } from "@/lib/editorExtensions";
+import { useEditorLinkClick } from "@/hooks/useEditorLinkClick";
+import { useCollaboration } from "@/hooks/useCollaboration";
+import type { Task, TaskStatus, TaskPriority } from "@/types";
+import { saveTask } from "@/app/actions";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcut";
+import { EditorToolbar } from "@/components/EditorToolbar";
 
 const STATUSES: { value: TaskStatus; label: string }[] = [
-  { value: 'todo', label: 'To Do' },
-  { value: 'in-progress', label: 'In Progress' },
-  { value: 'done', label: 'Done' },
-]
+  { value: "todo", label: "To Do" },
+  { value: "in-progress", label: "In Progress" },
+  { value: "done", label: "Done" },
+];
 
-const PRIORITIES: { value: TaskPriority | ''; label: string }[] = [
-  { value: '', label: 'None' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'urgent', label: 'Urgent' },
-]
+const PRIORITIES: { value: TaskPriority | ""; label: string }[] = [
+  { value: "", label: "None" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" },
+];
 
 export function TaskEditForm({ task }: { task: Task }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [title, setTitle] = useState(task.title)
-  const [status, setStatus] = useState<TaskStatus>(task.status)
-  const [priority, setPriority] = useState<TaskPriority | ''>(
-    task.priority ?? '',
-  )
-  const [assignee, setAssignee] = useState(task.assignee ?? '')
-  const [error, setError] = useState<string | null>(null)
-  const [hasBodyChanges, setHasBodyChanges] = useState(false)
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [title, setTitle] = useState(task.title);
+  const [status, setStatus] = useState<TaskStatus>(task.status);
+  const [priority, setPriority] = useState<TaskPriority | "">(task.priority ?? "");
+  const [assignee, setAssignee] = useState(task.assignee ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [hasBodyChanges, setHasBodyChanges] = useState(false);
 
-  const { provider, ydocRef, connectedUsers, user, broadcastSave } =
-    useCollaboration(`task:${task.filePath}`, {
-      onSaveBroadcast: () => setHasBodyChanges(false),
-    })
+  const { provider, ydocRef, connectedUsers, user, broadcastSave } = useCollaboration(`task:${task.filePath}`, {
+    onSaveBroadcast: () => setHasBodyChanges(false),
+  });
 
-  const handleEditorLinkClick = useEditorLinkClick()
+  const handleEditorLinkClick = useEditorLinkClick();
 
   // Build extensions — null until provider is ready
   const extensions = useMemo(() => {
-    if (!provider || !ydocRef.current) return null
+    if (!provider || !ydocRef.current) return null;
     return [
       ...getBaseExtensions({ collaboration: true }),
       Collaboration.configure({ document: ydocRef.current }),
       CollaborationCaret.configure({ provider, user }),
-    ]
-  }, [provider, user, ydocRef])
+    ];
+  }, [provider, user, ydocRef]);
 
   const editor = useEditor(
     {
@@ -65,25 +62,25 @@ export function TaskEditForm({ task }: { task: Task }) {
       immediatelyRender: false,
       editorProps: {
         attributes: {
-          class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px]',
+          class: "prose prose-sm max-w-none focus:outline-none min-h-[200px]",
         },
       },
       onUpdate: ({ transaction }) => {
-        if (transaction.getMeta('y-sync$')) return
-        setHasBodyChanges(true)
+        if (transaction.getMeta("y-sync$")) return;
+        setHasBodyChanges(true);
       },
     },
     [extensions],
-  )
+  );
 
   const handleSave = useCallback(() => {
-    setError(null)
+    setError(null);
     startTransition(async () => {
       try {
-        let body: string | undefined
+        let body: string | undefined;
         if (editor && hasBodyChanges) {
-          const html = editor.getHTML()
-          body = turndown.turndown(html)
+          const html = editor.getHTML();
+          body = turndown.turndown(html);
         }
         await saveTask({
           filePath: task.filePath,
@@ -92,37 +89,34 @@ export function TaskEditForm({ task }: { task: Task }) {
           priority,
           assignee,
           body,
-        })
-        setHasBodyChanges(false)
-        broadcastSave()
-        router.push('/')
+        });
+        setHasBodyChanges(false);
+        broadcastSave();
+        router.push("/");
       } catch {
-        setError('Failed to save task')
+        setError("Failed to save task");
       }
-    })
-  }, [task.filePath, title, status, priority, assignee, editor, hasBodyChanges, router, broadcastSave])
+    });
+  }, [task.filePath, title, status, priority, assignee, editor, hasBodyChanges, router, broadcastSave]);
 
   const handleBack = useCallback(() => {
-    router.push('/')
-  }, [router])
+    router.push("/");
+  }, [router]);
 
   useKeyboardShortcuts(
     useMemo(
       () => [
-        { key: 's', meta: true, handler: handleSave, global: true },
-        { key: 'Escape', handler: handleBack, global: true },
+        { key: "s", meta: true, handler: handleSave, global: true },
+        { key: "Escape", handler: handleBack, global: true },
       ],
       [handleSave, handleBack],
     ),
-  )
+  );
 
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <Link
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-        >
+        <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
           &larr; Back
         </Link>
 
@@ -144,24 +138,17 @@ export function TaskEditForm({ task }: { task: Task }) {
           </div>
         )}
 
-        <span className={`flex items-center gap-2 text-xs text-gray-400 ${connectedUsers.length === 0 ? 'ml-auto' : ''}`}>
-          <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
-            Esc
-          </kbd>
+        <span className={`flex items-center gap-2 text-xs text-gray-400 ${connectedUsers.length === 0 ? "ml-auto" : ""}`}>
+          <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Esc</kbd>
           <span>back</span>
-          <kbd className="ml-2 rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">
-            &#8984;S
-          </kbd>
+          <kbd className="ml-2 rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">&#8984;S</kbd>
           <span>save</span>
         </span>
       </div>
 
       <div className="space-y-5">
         <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
             Title
           </label>
           <input
@@ -175,10 +162,7 @@ export function TaskEditForm({ task }: { task: Task }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
@@ -196,16 +180,13 @@ export function TaskEditForm({ task }: { task: Task }) {
           </div>
 
           <div>
-            <label
-              htmlFor="priority"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
               Priority
             </label>
             <select
               id="priority"
               value={priority}
-              onChange={(e) => setPriority(e.target.value as TaskPriority | '')}
+              onChange={(e) => setPriority(e.target.value as TaskPriority | "")}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {PRIORITIES.map((p) => (
@@ -218,10 +199,7 @@ export function TaskEditForm({ task }: { task: Task }) {
         </div>
 
         <div>
-          <label
-            htmlFor="assignee"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
             Assignee
           </label>
           <input
@@ -235,30 +213,18 @@ export function TaskEditForm({ task }: { task: Task }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
 
-          {editor && (
-            <EditorToolbar
-              editor={editor}
-              className="mb-0 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 px-2 py-1.5"
-            />
-          )}
+          {editor && <EditorToolbar editor={editor} className="mb-0 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 px-2 py-1.5" />}
 
-          <div
-            className="rounded-b-md border border-gray-300 px-3 py-2"
-            onClickCapture={handleEditorLinkClick}
-          >
+          <div className="rounded-b-md border border-gray-300 px-3 py-2" onClickCapture={handleEditorLinkClick}>
             <EditorContent editor={editor} />
           </div>
         </div>
 
         <div className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2">
           <span className="text-xs font-medium text-gray-500">File</span>
-          <p className="text-sm text-gray-700 font-mono mt-0.5 break-all">
-            {task.filePath}
-          </p>
+          <p className="text-sm text-gray-700 font-mono mt-0.5 break-all">{task.filePath}</p>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -269,7 +235,7 @@ export function TaskEditForm({ task }: { task: Task }) {
             disabled={isPending}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
           >
-            {isPending ? 'Saving...' : 'Save'}
+            {isPending ? "Saving..." : "Save"}
           </button>
           <Link
             href="/"
@@ -280,5 +246,5 @@ export function TaskEditForm({ task }: { task: Task }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

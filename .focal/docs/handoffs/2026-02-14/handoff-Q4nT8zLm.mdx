@@ -1,0 +1,43 @@
+# Goal
+
+- Inspect and report current linting/coding-standards enforcement posture for the Focal repository, including configured tooling and actual run status.
+- Validate what is enforced automatically versus what is only available as manual commands.
+
+# Context / assumptions
+
+- Date of inspection: 2026-02-14.
+- Scope inspected: root config (`package.json`, `.eslintrc.json`, `tsconfig.json`), repository automation presence (`.github`, `.husky`), and current command outcomes.
+- Assumed package manager in use is Yarn based on project metadata and lockfile.
+- Assumed “coding standards” includes linting, formatting, type checking, tests, and enforcement hooks/CI.
+- UNKNOWN: external CI system outside repo (e.g., hosted pipeline config not checked into this workspace) could still enforce checks.
+
+# Decisions made
+
+- Ran `yarn lint` to verify effective ESLint pass/fail status instead of relying only on config files.
+- Ran `yarn test` as a secondary quality gate signal because tests are often part of standards enforcement.
+- Ran `yarn tsc --noEmit` to check whether strict TypeScript compiles cleanly in current state, even though no dedicated script exists.
+- Checked for automation mechanisms (`.github/workflows`, `.husky`) to determine whether standards are enforced pre-commit or in CI from this repo.
+- Chose not to modify lint/type config because request was inspection-only.
+
+# Artifacts
+
+- Files inspected:
+- `package.json`
+- `.eslintrc.json`
+- `tsconfig.json`
+- Commands executed and outcomes:
+- `yarn lint` => PASS, “No ESLint warnings or errors”.
+- `yarn test` => PASS, 2 test files / 20 tests passed.
+- `yarn tsc --noEmit` => PASS (no type errors emitted).
+- `test -d .github` => missing in repo root.
+- `test -d .husky` => missing in repo root.
+- Minimal diff summary:
+- Added handoff note: `.focal/docs/handoffs/2026-02-14/handoff-Q4nT8zLm.mdx`.
+
+# If we resume
+
+- Start by deciding desired enforcement baseline (lint + typecheck + tests + formatter) and whether to gate on pre-commit, CI, or both.
+- Add explicit `typecheck` script and optionally split lint scopes (e.g., `lint:fix`).
+- Add formatting standard (Prettier or equivalent) and define config/ignore files.
+- Add repository-local automation (`.husky` + `lint-staged`) if pre-commit gating is desired.
+- Add CI workflow in `.github/workflows` to enforce checks on PRs; if external CI is used, document it in-repo (UNKNOWN currently).

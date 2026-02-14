@@ -4,72 +4,72 @@
 
 /* Tiptap editor prose styles */
 .prose h1 {
-    @apply text-2xl font-bold mt-6 mb-4;
+  @apply text-2xl font-bold mt-6 mb-4;
 }
 .prose h2 {
-    @apply text-xl font-semibold mt-5 mb-3;
+  @apply text-xl font-semibold mt-5 mb-3;
 }
 .prose h3 {
-    @apply text-lg font-semibold mt-4 mb-2;
+  @apply text-lg font-semibold mt-4 mb-2;
 }
 .prose p {
-    @apply mb-3;
+  @apply mb-3;
 }
 .prose ul {
-    @apply list-disc pl-6 mb-3;
+  @apply list-disc pl-6 mb-3;
 }
 .prose ol {
-    @apply list-decimal pl-6 mb-3;
+  @apply list-decimal pl-6 mb-3;
 }
 .prose li {
-    @apply mb-0.5;
+  @apply mb-0.5;
 }
 .prose li > p {
-    @apply mb-0;
+  @apply mb-0;
 }
 .prose blockquote {
-    @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-3;
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-3;
 }
 .prose code {
-    @apply bg-gray-100 rounded px-1 py-0.5 text-sm font-mono;
+  @apply bg-gray-100 rounded px-1 py-0.5 text-sm font-mono;
 }
 .prose pre {
-    @apply bg-gray-100 rounded p-3 overflow-x-auto my-3;
+  @apply bg-gray-100 rounded p-3 overflow-x-auto my-3;
 }
 .prose pre code {
-    @apply bg-transparent p-0;
+  @apply bg-transparent p-0;
 }
 .prose a {
-    @apply text-blue-600 underline;
+  @apply text-blue-600 underline;
 }
 .prose hr {
-    @apply border-gray-300 my-6;
+  @apply border-gray-300 my-6;
 }
 
 /* Collaboration cursor styles */
 .collaboration-carets__caret {
-    display: inline;
-    border-left: 1px solid;
-    border-right: 1px solid;
-    margin-left: -1px;
-    margin-right: -1px;
-    pointer-events: none;
-    position: relative;
-    word-break: normal;
+  display: inline;
+  border-left: 1px solid;
+  border-right: 1px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
 }
 
 .collaboration-carets__label {
-    border-radius: 3px 3px 3px 0;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    left: -1px;
-    line-height: 1;
-    padding: 1px 6px 2px;
-    position: absolute;
-    top: -1.4em;
-    user-select: none;
-    white-space: nowrap;
-    width: max-content;
-    pointer-events: none;
+  border-radius: 3px 3px 3px 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  left: -1px;
+  line-height: 1;
+  padding: 1px 6px 2px;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+  width: max-content;
+  pointer-events: none;
 }
