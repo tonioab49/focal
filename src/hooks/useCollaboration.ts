@@ -61,10 +61,21 @@ export function useCollaboration(roomName: string, options?: UseCollaborationOpt
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const user = useMemo(() => getOrCreateUser(), []);
 
-  const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || "ws://localhost:1236";
+  const wsUrl = useMemo(() => {
+    if (typeof window === "undefined") {
+      // This hook only runs on the client, so window should be defined.
+      // Return a dummy value for SSR.
+      return "";
+    }
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname;
+    return `${protocol}//${host}:1236`;
+  }, []);
 
   // Provider + Y.Doc lifecycle
   useEffect(() => {
+    if (!wsUrl) return; // Don't run on the server
+
     const ydoc = new Y.Doc();
     ydocRef.current = ydoc;
 
