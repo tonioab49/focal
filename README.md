@@ -2,7 +2,8 @@
 
 A file-centric task and documentation manager that lives inside your Git repos.
 
-![Focal Kanban Board](docs/screenshot.png)
+<img width="1829" height="927" alt="image" src="https://github.com/user-attachments/assets/8ee48f11-6e00-4e5f-8257-f440de430040" />
+
 
 Focal stores tasks and docs as plain files (`.mdx` / `.md`) in a `.focal/` directory at the root of your repositories. It aggregates them into a Kanban board and a documentation browser with a rich text editor — then commits changes back through Git.
 
