@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { GitStatusIndicator } from "./GitStatusIndicator";
 import { RepoSelector } from "./RepoSelector";
+import { NewItemModal } from "./NewItemModal";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcut";
 import type { DocNode } from "@/lib/docs";
 import type { GitStatus } from "@/app/actions";
@@ -22,15 +24,42 @@ export function AppShell({
   selectedRepo: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [newModalType, setNewModalType] = useState<"task" | "doc" | null>(null);
+  const pathname = usePathname();
 
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
-  useKeyboardShortcuts(useMemo(() => [{ key: "[", handler: toggleSidebar }], [toggleSidebar]));
+  const openNewModal = useCallback(() => {
+    setNewModalType(pathname.startsWith("/docs") ? "doc" : "task");
+  }, [pathname]);
+
+  useKeyboardShortcuts(
+    useMemo(
+      () => [
+        { key: "[", handler: toggleSidebar },
+        { key: "n", handler: openNewModal },
+      ],
+      [toggleSidebar, openNewModal],
+    ),
+  );
+
+  const onNewTask = useCallback(() => setNewModalType("task"), []);
+  const onNewDoc = useCallback(() => setNewModalType("doc"), []);
+  const closeModal = useCallback(() => setNewModalType(null), []);
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar open={sidebarOpen} onClose={closeSidebar} docTree={docTree} gitStatus={gitStatus} repos={repos} selectedRepo={selectedRepo} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={closeSidebar}
+        docTree={docTree}
+        gitStatus={gitStatus}
+        repos={repos}
+        selectedRepo={selectedRepo}
+        onNewTask={onNewTask}
+        onNewDoc={onNewDoc}
+      />
 
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
@@ -51,6 +80,8 @@ export function AppShell({
 
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+
+      {newModalType !== null && <NewItemModal type={newModalType} repoName={selectedRepo} onClose={closeModal} />}
     </div>
   );
 }

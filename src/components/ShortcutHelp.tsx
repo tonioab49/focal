@@ -7,6 +7,7 @@ const SECTIONS = [
   {
     title: "Board",
     shortcuts: [
+      { keys: ["N"], label: "New task" },
       { keys: ["J", "\u2193"], label: "Move down" },
       { keys: ["K", "\u2191"], label: "Move up" },
       { keys: ["H", "\u2190"], label: "Move left" },
@@ -25,6 +26,7 @@ const SECTIONS = [
   {
     title: "Docs",
     shortcuts: [
+      { keys: ["N"], label: "New document" },
       { keys: ["E"], label: "Edit document" },
       { keys: ["\u2318S"], label: "Save document" },
       { keys: ["Esc"], label: "Cancel editing" },

@@ -230,6 +230,87 @@ export async function getUncommittedFiles(): Promise<string[]> {
   return dirty;
 }
 
+export async function createTask({ title, repoName }: { title: string; repoName?: string }): Promise<{ taskId: string }> {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  let repoRoot: string;
+  let resolvedRepoName: string;
+  if (isLocalMode()) {
+    repoRoot = findGitRoot();
+    resolvedRepoName = path.basename(repoRoot);
+  } else {
+    if (!repoName) throw new Error("repoName required in multi-repo mode");
+    repoRoot = repoLocalPath(repoName);
+    resolvedRepoName = repoName;
+  }
+
+  const tasksDir = path.join(repoRoot, ".focal", "tasks");
+  fs.mkdirSync(tasksDir, { recursive: true });
+
+  let finalSlug = slug;
+  let counter = 2;
+  while (fs.existsSync(path.join(tasksDir, `${finalSlug}.mdx`))) {
+    finalSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  const filePath = path.join(tasksDir, `${finalSlug}.mdx`);
+  const resolved = path.resolve(filePath);
+
+  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
+  if (!resolved.startsWith(allowedRoot + path.sep)) throw new Error("Invalid file path");
+  if (!resolved.includes(`${path.sep}.focal${path.sep}tasks${path.sep}`)) throw new Error("Invalid file path");
+
+  const content = matter.stringify("", { title, status: "todo" });
+  fs.writeFileSync(resolved, content, "utf-8");
+
+  revalidatePath("/");
+  return { taskId: `${resolvedRepoName}/${finalSlug}` };
+}
+
+export async function createDoc({ title, repoName }: { title: string; repoName?: string }): Promise<{ slug: string }> {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  let repoRoot: string;
+  let resolvedRepoName: string;
+  if (isLocalMode()) {
+    repoRoot = findGitRoot();
+    resolvedRepoName = path.basename(repoRoot);
+  } else {
+    if (!repoName) throw new Error("repoName required in multi-repo mode");
+    repoRoot = repoLocalPath(repoName);
+    resolvedRepoName = repoName;
+  }
+
+  const docsDir = path.join(repoRoot, ".focal", "docs");
+  fs.mkdirSync(docsDir, { recursive: true });
+
+  let finalSlug = slug;
+  let counter = 2;
+  while (fs.existsSync(path.join(docsDir, `${finalSlug}.md`))) {
+    finalSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  const filePath = path.join(docsDir, `${finalSlug}.md`);
+  const resolved = path.resolve(filePath);
+
+  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
+  if (!resolved.startsWith(allowedRoot + path.sep)) throw new Error("Invalid file path");
+  if (!resolved.includes(`${path.sep}.focal${path.sep}docs${path.sep}`)) throw new Error("Invalid file path");
+
+  fs.writeFileSync(resolved, "", "utf-8");
+
+  revalidatePath("/docs");
+  return { slug: `${resolvedRepoName}/${finalSlug}` };
+}
+
 export async function commitChanges(repoFilter?: string): Promise<{ message: string }> {
   if (isLocalMode()) {
     const gitRoot = findGitRoot();

@@ -14,6 +14,8 @@ export function Sidebar({
   gitStatus,
   repos,
   selectedRepo,
+  onNewTask,
+  onNewDoc,
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,6 +23,8 @@ export function Sidebar({
   gitStatus: GitStatus;
   repos: string[];
   selectedRepo: string;
+  onNewTask: () => void;
+  onNewDoc: () => void;
 }) {
   const pathname = usePathname();
 
@@ -50,7 +54,15 @@ export function Sidebar({
 
         <nav className="h-[calc(100%-3.5rem-2.5rem)] overflow-y-auto p-3">
           <div>
-            <h3 className="px-3 text-xs font-medium uppercase tracking-wide text-gray-400">Tasks</h3>
+            <div className="flex items-center justify-between px-3">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Tasks</h3>
+              <button
+                onClick={onNewTask}
+                className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 hover:border-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+              >
+                New
+              </button>
+            </div>
             <ul className="mt-1 space-y-0.5">
               <li>
                 <Link
@@ -69,7 +81,15 @@ export function Sidebar({
           </div>
 
           <div className="mt-4 border-t border-gray-200 pt-3">
-            <h3 className="px-3 text-xs font-medium uppercase tracking-wide text-gray-400">Documentation</h3>
+            <div className="flex items-center justify-between px-3">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Documentation</h3>
+              <button
+                onClick={onNewDoc}
+                className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 hover:border-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+              >
+                New
+              </button>
+            </div>
             {docTree.length === 0 ? (
               <p className="mt-1 px-3 text-xs text-gray-400 italic">No docs found</p>
             ) : (
@@ -98,7 +118,7 @@ function DocTreeItems({ nodes, pathname, onClose, depth }: { nodes: DocNode[]; p
             {hasChildren ? (
               <div>
                 <span
-                  className="block rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500"
+                  className="block truncate rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500"
                   style={{ paddingLeft: itemPaddingLeft }}
                 >
                   {node.title}
@@ -111,7 +131,7 @@ function DocTreeItems({ nodes, pathname, onClose, depth }: { nodes: DocNode[]; p
               <Link
                 href={href}
                 onClick={onClose}
-                className={`block rounded-md py-1 text-sm transition-colors ${
+                className={`block truncate rounded-md py-1 text-sm transition-colors ${
                   isActive ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
                 style={{ paddingLeft: itemPaddingLeft }}
