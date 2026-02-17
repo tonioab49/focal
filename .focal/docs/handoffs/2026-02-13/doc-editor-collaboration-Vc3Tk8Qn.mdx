@@ -12,7 +12,6 @@ Add realtime collaborative editing to DocEditor using Hocuspocus + tiptap Collab
 # Decisions made
 
 - Hocuspocus server in `server/hocuspocus.ts` on port 1236 (configurable via `HOCUSPOCUS_PORT`)
-- Client connects via `NEXT_PUBLIC_HOCUSPOCUS_URL` (defaults to `ws://localhost:1236`)
 - `concurrently -k` used in all scripts to ensure CTRL-C kills both Next.js and WS server
 - StarterKit's `undoRedo: false` since Collaboration provides Yjs-aware undo/redo
 - Docker CMD spawns both processes with proper SIGTERM forwarding

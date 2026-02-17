@@ -103,12 +103,9 @@ The Docker build needs to also compile the hocuspocus server. The runner stage r
 
 ### 7. Environment Variables
 
-| Variable                     | Default               | Description                   |
-| ---------------------------- | --------------------- | ----------------------------- |
-| `HOCUSPOCUS_PORT`            | `1236`                | Port for the WebSocket server |
-| `NEXT_PUBLIC_HOCUSPOCUS_URL` | `ws://localhost:1236` | WebSocket URL for the client  |
-
-`NEXT_PUBLIC_` prefix makes it available in client-side code.
+| Variable          | Default | Description                   |
+| ----------------- | ------- | ----------------------------- |
+| `HOCUSPOCUS_PORT` | `1236`  | Port for the WebSocket server |
 
 ## Save Flow (Updated)
 

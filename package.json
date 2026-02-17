@@ -1,7 +1,9 @@
 {
   "name": "focal",
   "version": "0.1.0",
-  "private": true,
+  "bin": {
+    "focal": "bin/focal.mjs"
+  },
   "scripts": {
     "dev": "test -f .env.local && set -a && . ./.env.local && set +a; concurrently -k -n next,ws -c blue,green \"next dev\" \"tsx server/hocuspocus.ts\"",
     "dev:bare": "concurrently -k -n next,ws -c blue,green \"next dev\" \"tsx server/hocuspocus.ts\"",
@@ -43,6 +45,7 @@
     "react-dom": "^18.2.0",
     "turndown": "^7.2.2",
     "y-protocols": "^1.0.7",
+    "tsx": "^4.21.0",
     "yjs": "^13.6.29"
   },
   "devDependencies": {
@@ -59,7 +62,6 @@
     "postcss": "^8.4.35",
     "prettier": "^3.8.1",
     "tailwindcss": "^3.4.1",
-    "tsx": "^4.21.0",
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   }

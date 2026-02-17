@@ -70,12 +70,11 @@ Focal parses these files and renders them as a Kanban board (`todo` / `in-progre
 
 ## Configuration
 
-| Variable                     | Default                | Description                                        |
-| ---------------------------- | ---------------------- | -------------------------------------------------- |
-| `GITHUB_REPOS`               | _(unset = local mode)_ | Comma-separated `owner/repo` slugs for remote mode |
-| `GITHUB_TOKEN`               | —                      | Fine-grained PAT with Contents read/write          |
-| `HOCUSPOCUS_PORT`            | `1236`                 | WebSocket server port                              |
-| `NEXT_PUBLIC_HOCUSPOCUS_URL` | `ws://localhost:1236`  | Client WebSocket URL                               |
+| Variable          | Default                | Description                                        |
+| ----------------- | ---------------------- | -------------------------------------------------- |
+| `GITHUB_REPOS`    | _(unset = local mode)_ | Comma-separated `owner/repo` slugs for remote mode |
+| `GITHUB_TOKEN`    | —                      | Fine-grained PAT with Contents read/write          |
+| `HOCUSPOCUS_PORT` | `1236`                 | WebSocket server port                              |
 
 ## Tech stack
 
