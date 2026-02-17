@@ -44,7 +44,14 @@ const env = {
   FOCAL_CWD: userCwd,
 };
 
-console.log(`\nStarting Focal at http://localhost:${port}\n`);
+const url = `http://localhost:${port}`;
+const link = `\x1b]8;;${url}\x1b\\${url}\x1b]8;;\x1b\\`;
+console.log(`
+\x1b[1m\x1b[35m  ▸ Focal\x1b[0m  is starting up…
+
+  \x1b[2mApp\x1b[0m      \x1b[1m\x1b[36m${link}\x1b[0m
+  \x1b[2mRepo\x1b[0m     ${repoPath}
+`);
 
 const children = [];
 let shuttingDown = false;
