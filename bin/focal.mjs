@@ -41,6 +41,7 @@ const env = {
   ...process.env,
   PORT: port,
   HOCUSPOCUS_PORT: wsPort,
+  FOCAL_CWD: userCwd,
 };
 
 console.log(`\nStarting Focal at http://localhost:${port}\n`);

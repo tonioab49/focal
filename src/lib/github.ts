@@ -16,7 +16,7 @@ export function isLocalMode(): boolean {
   return !raw || raw.trim() === "";
 }
 
-export function findGitRoot(startDir: string = process.cwd()): string {
+export function findGitRoot(startDir: string = process.env.FOCAL_CWD ?? process.cwd()): string {
   let dir = path.resolve(startDir);
   while (true) {
     if (fs.existsSync(path.join(dir, ".git"))) {
