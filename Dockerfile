@@ -36,6 +36,9 @@ COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nextjs:nodejs docker/start.js ./docker/start.js
 COPY docker/nginx/default.conf.template /etc/nginx/http.d/default.conf.template
 
+RUN git config --system user.email "focal-bot@focal" && \
+    git config --system user.name "Focal Bot"
+
 USER nextjs
 
 CMD ["node", "docker/start.js"]

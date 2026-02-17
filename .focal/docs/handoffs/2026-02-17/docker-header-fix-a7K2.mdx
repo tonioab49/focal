@@ -1,0 +1,42 @@
+# Goal
+
+- Resolve Docker runtime request failures caused by a reverse-proxy host header mismatch.
+- Ensure app requests proxied through nginx preserve `host:port` so server-side origin validation passes.
+
+# Context / assumptions
+
+- User reported runtime error: `x-forwarded-host`=`localhost` did not match `origin`=`localhost:4000`.
+- App runs in a single container with nginx reverse-proxying both Next.js and Hocuspocus.
+- Docker image listens externally on `PORT` (default `4000`), with internal Next.js and Hocuspocus ports routed by nginx.
+- Existing nginx config forwarded `Host $host`, which drops explicit port in common localhost cases.
+- Next.js request validation appears to compare forwarded host to origin, and mismatch blocks requests.
+- No evidence of broken Docker port publishing rules; issue is header normalization at proxy layer.
+- UNKNOWN: exact Next.js call path that triggered the validation (likely Server Action or CSRF-protected endpoint).
+- UNKNOWN: whether any upstream infra depends on previous `Host` header behavior without port.
+
+# Decisions made
+
+- Changed nginx proxy headers to preserve inbound host with port by forwarding `$http_host`.
+- Added explicit `X-Forwarded-Host $http_host` for consistency and unambiguous upstream behavior.
+- Applied the same fix to both proxy locations:
+- `/` (Next.js app traffic)
+- `/ws` (Hocuspocus websocket upgrade path)
+- Did not change external Docker `-p` mappings because symptom indicates header mismatch, not socket exposure failure.
+- Did not alter `docker/start.js` port interpolation logic; existing substitution already handles configured ports.
+
+# Artifacts
+
+- Modified: `docker/nginx/default.conf.template`
+- Minimal diff summary:
+- Replaced `proxy_set_header Host $host;` with `proxy_set_header Host $http_host;` in both `/` and `/ws`.
+- Added `proxy_set_header X-Forwarded-Host $http_host;` in both `/` and `/ws`.
+- No additional source files changed.
+- No tests executed in this session (configuration-only fix).
+
+# If we resume
+
+- Rebuild and rerun container so nginx template regenerates active config from `docker/start.js`.
+- Verify request path that previously failed now succeeds from `http://localhost:4000`.
+- Validate websocket collaboration still connects at `/ws` (no regression from header changes).
+- If errors persist, inspect runtime-generated `/etc/nginx/http.d/default.conf` inside container and capture upstream headers.
+- If needed, add temporary logging of `Host`, `X-Forwarded-Host`, and `Origin` at app entrypoint to confirm end-to-end values.
