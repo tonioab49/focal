@@ -7,7 +7,7 @@ import matter from "gray-matter";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { TaskPriority, TaskStatus } from "@/types";
-import { REPOS_DIR, parseRepoSlugs, repoLocalPath, pushRepo, isLocalMode, findGitRoot, syncAllRepos } from "@/lib/github";
+import { REPOS_DIR, parseRepoSlugs, repoLocalPath, pushRepo, rebaseRepo, isLocalMode, findGitRoot, syncAllRepos } from "@/lib/github";
 
 const REPO_COOKIE = "focal-repo";
 
@@ -358,9 +358,17 @@ export async function commitChanges(repoFilter?: string): Promise<{ message: str
       execSync('git commit -m "Update focal content"', { cwd: repoPath });
 
       try {
+        rebaseRepo(repoPath);
+      } catch {
+        errors.push(`Rebase failed for ${slug}`);
+        continue;
+      }
+
+      try {
         pushRepo(repoPath);
       } catch {
         errors.push(`Push failed for ${slug}`);
+        continue;
       }
 
       committed++;

@@ -166,3 +166,41 @@ export function pushRepo(repoPath: string): void {
     timeout: 30_000,
   });
 }
+
+export function rebaseRepo(repoPath: string): void {
+  execSync("git fetch origin", {
+    cwd: repoPath,
+    stdio: "pipe",
+    timeout: 30_000,
+  });
+
+  const branch = execSync("git rev-parse --abbrev-ref HEAD", {
+    cwd: repoPath,
+    stdio: "pipe",
+  })
+    .toString()
+    .trim();
+
+  if (!branch || branch === "HEAD") {
+    throw new Error("Cannot rebase detached HEAD");
+  }
+
+  try {
+    execSync(`git rebase origin/${branch}`, {
+      cwd: repoPath,
+      stdio: "pipe",
+      timeout: 30_000,
+    });
+  } catch (err) {
+    try {
+      execSync("git rebase --abort", {
+        cwd: repoPath,
+        stdio: "pipe",
+        timeout: 30_000,
+      });
+    } catch {
+      // ignore abort failures and surface the original rebase failure
+    }
+    throw err;
+  }
+}
