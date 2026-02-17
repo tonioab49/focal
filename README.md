@@ -1,15 +1,24 @@
 # Focal
 
-A file-centric task and documentation manager that lives inside your Git repos.
+A collaborative, Markdown-based editor for issues and docs that lives inside your Git repos.
 
 <img width="1829" height="927" alt="image" src="https://github.com/user-attachments/assets/8ee48f11-6e00-4e5f-8257-f440de430040" />
 
+## Why
+
+Project management tools drift from the code and were not designed for AI agents. Focal keeps tasks and docs version-controlled alongside the source, editable from its own web UI or any text editor.
+
+## What does Focal do exactly?
 
 Focal stores tasks and docs as plain files (`.mdx` / `.md`) in a `.focal/` directory at the root of your repositories. It aggregates them into a Kanban board and a documentation browser with a rich text editor — then commits changes back through Git.
 
-## Why
+### Features
 
-Project management tools drift from the code. Focal keeps tasks and docs version-controlled alongside the source, editable from a web UI or any text editor, and visible across multiple repos at once.
+- **Fully Markdown-based**: issues are stored as regular `*.mdx` files with frontmatter for fields like _priority_, docs are just regular `*.md` files
+- **Realtime Collaboration**: concurrent editing of Markdown for easy collaboration during planning and design
+- **Git-backed**:
+
+![Focal Kanban Board](docs/screenshot.png)
 
 ## Quick start
 

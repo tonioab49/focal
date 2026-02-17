@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { existsSync, cpSync, mkdtempSync, symlinkSync, rmSync } from "node:fs";
+import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
 
 const require = createRequire(import.meta.url);
 
@@ -43,7 +44,33 @@ const tsxBin = resolveBin("tsx", "tsx");
 // Build Next.js app on first run (cached in npx store afterwards).
 if (!existsSync(join(pkgDir, ".next"))) {
   console.log("Building Focal (first run — this takes about a minute)…");
-  execFileSync(nextBin, ["build"], { cwd: pkgDir, stdio: "inherit" });
+
+  // When pkgDir is inside .npm/_npx/.../node_modules/focal/, webpack treats source files
+  // as node_modules and skips TypeScript compilation. Build in a temp dir outside
+  // node_modules so SWC compiles TypeScript properly, then cache .next/ back in pkgDir.
+  const buildTmp = mkdtempSync(join(tmpdir(), "focal-build-"));
+  try {
+    // Copy source files — skip node_modules, .next, repos
+    cpSync(pkgDir, buildTmp, {
+      recursive: true,
+      filter: (src) => {
+        const rel = relative(pkgDir, src);
+        if (rel === "") return true;
+        const top = rel.split(sep)[0];
+        return top !== "node_modules" && top !== ".next" && top !== "repos";
+      },
+    });
+
+    // Symlink the flat npx node_modules store so Next.js can resolve dependencies
+    symlinkSync(dirname(pkgDir), join(buildTmp, "node_modules"));
+
+    execFileSync(nextBin, ["build"], { cwd: buildTmp, stdio: "inherit" });
+
+    // Cache the build output back into pkgDir for future runs
+    cpSync(join(buildTmp, ".next"), join(pkgDir, ".next"), { recursive: true });
+  } finally {
+    rmSync(buildTmp, { recursive: true, force: true });
+  }
 }
 
 const port = process.env.PORT || "3333";
