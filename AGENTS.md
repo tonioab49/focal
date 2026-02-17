@@ -24,6 +24,7 @@ It parses multiple git repositories and find tasks in mdx format, and displays t
 - Include only information that would help resume work later; do not re-explain basics.
 - If anything is ambiguous or unverified, mark it explicitly as UNKNOWN.
 - If you made code changes, include exact file paths and a minimal diff summary.
+- Do not create a handoff file for every message or question I ask you inside a session. Create exactly one handoff file per session.
 
 ### Template for handoffs
 

@@ -16,7 +16,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "docker": "docker build -t focal . && docker run --rm -p 4000:4000 -p 1236:1236 --env-file .env.docker.local focal",
+    "docker": "docker build -t focal . && docker run --rm -p ${PORT:-4000}:${PORT:-4000} -e PORT=${PORT:-4000} --env-file .env.docker.local focal",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -19,29 +19,23 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=4000
+ENV NEXT_INTERNAL_PORT=3000
+ENV HOCUSPOCUS_PORT=1236
 
-RUN apk add --no-cache git
+RUN apk add --no-cache git nginx
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
+RUN mkdir -p /var/lib/nginx /var/log/nginx /run/nginx && \
+    chown -R nextjs:nodejs /var/lib/nginx /var/log/nginx /run/nginx /etc/nginx
 
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/dist-server ./dist-server
 COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs docker/start.js ./docker/start.js
+COPY docker/nginx/default.conf.template /etc/nginx/http.d/default.conf.template
 
 USER nextjs
-EXPOSE 4000
-EXPOSE 1236
 
-# Run both Next.js and Hocuspocus; exec ensures SIGTERM reaches both
-CMD ["node", "-e", "\
-const { spawn } = require('child_process');\
-const next = spawn('node', ['server.js'], { stdio: 'inherit' });\
-const ws = spawn('node', ['dist-server/hocuspocus.js'], { stdio: 'inherit' });\
-const exit = () => { next.kill(); ws.kill(); process.exit(); };\
-process.on('SIGTERM', exit);\
-process.on('SIGINT', exit);\
-next.on('exit', exit);\
-ws.on('exit', exit);\
-"]
+CMD ["node", "docker/start.js"]

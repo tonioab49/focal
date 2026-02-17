@@ -68,8 +68,10 @@ export function useCollaboration(roomName: string, options?: UseCollaborationOpt
       return "";
     }
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname;
-    return `${protocol}//${host}:1236`;
+    if (process.env.NODE_ENV === "development") {
+      return `${protocol}//${window.location.hostname}:1236`;
+    }
+    return `${protocol}//${window.location.host}/ws`;
   }, []);
 
   // Provider + Y.Doc lifecycle
