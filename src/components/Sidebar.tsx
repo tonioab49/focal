@@ -24,7 +24,7 @@ export function Sidebar({
   repos: string[];
   selectedRepo: string;
   onNewTask: () => void;
-  onNewDoc: () => void;
+  onNewDoc: (parentDir?: string) => void;
 }) {
   const pathname = usePathname();
 
@@ -84,7 +84,7 @@ export function Sidebar({
             <div className="flex items-center justify-between px-3">
               <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">Documentation</h3>
               <button
-                onClick={onNewDoc}
+                onClick={() => onNewDoc()}
                 className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 hover:border-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
               >
                 New
@@ -94,7 +94,7 @@ export function Sidebar({
               <p className="mt-1 px-3 text-xs text-gray-400 italic">No docs found</p>
             ) : (
               <ul className="mt-1 space-y-0">
-                <DocTreeItems nodes={docTree} pathname={pathname} onClose={onClose} depth={0} />
+                <DocTreeItems nodes={docTree} pathname={pathname} onClose={onClose} depth={0} onNewDoc={onNewDoc} />
               </ul>
             )}
           </div>
@@ -104,7 +104,19 @@ export function Sidebar({
   );
 }
 
-function DocTreeItems({ nodes, pathname, onClose, depth }: { nodes: DocNode[]; pathname: string; onClose: () => void; depth: number }) {
+function DocTreeItems({
+  nodes,
+  pathname,
+  onClose,
+  depth,
+  onNewDoc,
+}: {
+  nodes: DocNode[];
+  pathname: string;
+  onClose: () => void;
+  depth: number;
+  onNewDoc: (parentDir?: string) => void;
+}) {
   return (
     <>
       {nodes.map((node) => {
@@ -116,15 +128,21 @@ function DocTreeItems({ nodes, pathname, onClose, depth }: { nodes: DocNode[]; p
         return (
           <li key={node.slug}>
             {hasChildren ? (
-              <div>
-                <span
-                  className="block truncate rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500"
-                  style={{ paddingLeft: itemPaddingLeft }}
-                >
-                  {node.title}
-                </span>
+              <div className="group">
+                <div className="flex items-center" style={{ paddingLeft: itemPaddingLeft }}>
+                  <span className="flex-1 truncate rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    {node.title}
+                  </span>
+                  <button
+                    onClick={() => onNewDoc(node.filePath)}
+                    className="invisible group-hover:visible mr-1 rounded px-1 py-0.5 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                    title="New doc here"
+                  >
+                    +
+                  </button>
+                </div>
                 <ul className="space-y-0">
-                  <DocTreeItems nodes={node.children!} pathname={pathname} onClose={onClose} depth={depth + 1} />
+                  <DocTreeItems nodes={node.children!} pathname={pathname} onClose={onClose} depth={depth + 1} onNewDoc={onNewDoc} />
                 </ul>
               </div>
             ) : (

@@ -4,43 +4,100 @@ This document describes how Focal handles documentation files alongside tasks.
 
 ## Overview
 
-Focal scans the `.focal/docs/` directory in each configured repository for Markdown files and displays them in the sidebar under the "Documentation" section. Users can view and edit documentation through a rich text editor powered by Tiptap, with changes committed and pushed to GitHub just like task edits.
+Focal scans the **entire repository** for Markdown files (`*.md` and `*.mdx`) and displays them in the sidebar under the "Documentation" section. The `.focal/docs/` directory is always included; dot directories (e.g. `.git/`, `.github/`) are excluded except for `.focal/docs/`. Users can view and edit documentation through a rich text editor powered by Tiptap, with changes committed and pushed to Git just like task edits.
+
+## Discovery Model
+
+Focal uses `git ls-files` to enumerate documentation files. This approach:
+
+- Is fast (no filesystem traversal)
+- Automatically respects `.gitignore` (no `node_modules/` scanning)
+- Covers both tracked files and new untracked/unstaged files
+
+### Inclusion Rules
+
+1. **Both `.md` and `.mdx`** files are picked up everywhere in the repo
+2. **`.focal/docs/`** is always included
+3. **Dot directories** are excluded — any path where a segment starts with `.` is skipped, except paths under `.focal/docs/`
+4. **`.focal/tasks/`** is explicitly excluded (task files are not shown as docs)
+
+### Slug Format
+
+Slugs are relative to the **repo root**:
+
+| File                             | URL                                        |
+| -------------------------------- | ------------------------------------------ |
+| `.focal/docs/getting-started.md` | `/docs/{repo}/.focal/docs/getting-started` |
+| `docs/intro.md`                  | `/docs/{repo}/docs/intro`                  |
+| `README.md`                      | `/docs/{repo}/README`                      |
+
+## Exclusions via `.focal/.focalignore`
+
+Create `.focal/.focalignore` to exclude additional paths from the doc tree. Patterns follow `.gitignore` conventions:
+
+```
+# Build outputs
+node_modules/
+dist/
+build/
+out/
+.next/
+coverage/
+```
+
+- Lines starting with `#` are comments
+- Patterns ending with `/` match directories at any depth
+- Patterns with `*` are treated as simple globs
 
 ## Directory Structure
 
 ```
-.focal/
-├── tasks/
-│   └── *.mdx           # Task files (Kanban board)
-└── docs/
-    ├── index.md        # Documentation root
-    ├── getting-started.md
-    └── guides/
-        ├── setup.md
-        └── deployment.md
+repo/
+├── README.md                   # appears in docs tree
+├── docs/
+│   ├── intro.md               # appears in docs tree
+│   └── guide/
+│       └── setup.md           # appears in docs tree
+└── .focal/
+    ├── .focalignore            # exclusion patterns
+    ├── docs/
+    │   ├── index.md           # appears in docs tree
+    │   └── getting-started.md # appears in docs tree
+    └── tasks/
+        └── *.mdx              # task files — NOT in docs tree
 ```
-
-Documentation files are standard Markdown (`.md`). Subdirectories are supported and reflected in the sidebar hierarchy.
 
 ## Sidebar Integration
 
-The sidebar scans `.focal/docs/` and builds a table of contents:
+The sidebar builds a hierarchical table of contents from the discovered files:
 
 ```
-Tasks
-──────────────
-Documentation
-  ├── Index
-  ├── Getting Started
-  └── Guides
-      ├── Setup
-      └── Deployment
+Documentation                              [New]
+  .Focal
+    Docs
+      Getting Started
+  Docs
+    Guide
+      Setup
+    Intro
+  Readme
 ```
 
 - File names are converted to display titles (e.g., `getting-started.md` → "Getting Started")
 - Directories become collapsible sections
 - The active document is highlighted
-- Files are sorted alphabetically, with `index.md` always first
+- Files are sorted alphabetically, with `index` files first
+- **Hovering a directory** reveals a `+` button to create a new doc in that directory
+
+## Creating New Docs
+
+### Top-level "New" button
+
+Clicking "New" in the Documentation section creates a new doc in `.focal/docs/` (default).
+
+### Per-directory "+" button
+
+Hovering over any directory in the sidebar reveals a `+` button. Clicking it creates a new doc directly inside that directory.
 
 ## Editor
 
@@ -53,25 +110,12 @@ Documentation is edited using the [Tiptap Simple Editor](https://tiptap.dev/docs
 - Markdown shortcuts (e.g., `# ` for headings, `**` for bold)
 - Clean, minimal UI that matches Focal's design
 
-### Implementation
-
-- Install Tiptap packages: `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`
-- Create a `DocEditor` component wrapping Tiptap's editor
-- Load Markdown content, convert to HTML for editing, convert back to Markdown on save
-- Use `turndown` library for HTML → Markdown conversion
-- Use `marked` or `remark` for Markdown → HTML conversion
-
 ## Routes
 
 | Route             | Description                                                   |
 | ----------------- | ------------------------------------------------------------- |
 | `/docs`           | Documentation index (redirects to first doc or shows welcome) |
 | `/docs/[...slug]` | View/edit a specific document                                 |
-
-The `[...slug]` catch-all matches the file path relative to `.focal/docs/`, e.g.:
-
-- `/docs/getting-started` → `.focal/docs/getting-started.md`
-- `/docs/guides/setup` → `.focal/docs/guides/setup.md`
 
 ## Editing Flow
 
@@ -88,16 +132,16 @@ The `[...slug]` catch-all matches the file path relative to `.focal/docs/`, e.g.
 
 ## Server Actions
 
-### `loadDocs()`
+### `loadDocTree(repoName?)`
 
-Scans all configured repositories for `.focal/docs/` directories and returns a tree structure:
+Scans all configured repositories using `git ls-files`, applies exclusion rules, and returns a nested tree structure:
 
 ```typescript
 interface DocNode {
-  slug: string; // URL path segment
+  slug: string; // URL path: "{repo}/{path-without-ext}"
   title: string; // Display name
   filePath: string; // Absolute path on disk
-  children?: DocNode[]; // Subdirectories
+  children?: DocNode[];
 }
 ```
 
@@ -109,13 +153,29 @@ Reads and returns the raw Markdown content of a document.
 
 Writes Markdown content to disk. Validates:
 
-- Path is within a `.focal/docs/` directory
 - Path is within the allowed root (local Git root in local mode, `REPOS_DIR` in remote mode)
+- File ends with `.md` or `.mdx`
+- Path is NOT within `.focal/tasks/`
 
-### Existing actions
+### `createDoc({ title, repoName, parentDir? })`
 
-- `getUncommittedFiles()` — extended to include `.focal/docs/` changes
-- `commitChanges()` — extended to stage `.focal/docs/` alongside `.focal/tasks/`
+Creates a new empty doc. `parentDir` defaults to `.focal/docs/` if not provided. Applies the same validation as `saveDoc`. Returns the new doc's slug (relative to repo root).
+
+### `commitChanges()`
+
+Stages and commits changed docs:
+
+1. Stages `.focal/tasks/` (task files)
+2. Stages individual changed `.md`/`.mdx` files (excluding task files)
+3. Commits with message "Update focal content"
+4. Pushes to remote (in remote mode)
+
+## Security
+
+- File paths validated to stay within the allowed root directory (local Git root or `REPOS_DIR`)
+- Writes rejected if path is in `.focal/tasks/` (prevents overwriting task frontmatter)
+- Only `.md`/`.mdx` files are staged during commit (no accidental staging of other files)
+- Content is treated as Markdown text, not executed
 
 ## Keyboard Shortcuts
 
@@ -125,37 +185,12 @@ Writes Markdown content to disk. Validates:
 | `⌘S`     | Doc edit | Save document                  |
 | `Escape` | Doc edit | Cancel editing, return to view |
 
-These are added to the existing keyboard shortcuts system and displayed in the `?` help dialog.
-
-## Security
-
-Same security model as tasks:
-
-- File paths validated to stay within the allowed root directory (local Git root or `REPOS_DIR`) and `.focal/docs/` subtree
-- No arbitrary file writes outside the expected directories
-- Content is treated as Markdown text, not executed
-- Git operations happen server-side only
-
-## Dependencies
-
-New packages required:
-
-```json
-{
-  "@tiptap/react": "^2.x",
-  "@tiptap/starter-kit": "^2.x",
-  "@tiptap/extension-link": "^2.x",
-  "marked": "^12.x",
-  "turndown": "^7.x"
-}
-```
-
 ## Related Files
 
 - `src/app/docs/page.tsx` — Documentation index
 - `src/app/docs/[...slug]/page.tsx` — Document view/edit page
 - `src/components/DocEditor.tsx` — Tiptap editor wrapper
-- `src/components/DocViewer.tsx` — Markdown renderer for view mode
-- `src/components/Sidebar.tsx` — Extended with docs tree
+- `src/components/Sidebar.tsx` — Extended with docs tree and per-directory "+" button
 - `src/lib/docs.ts` — Doc scanning and parsing utilities
-- `src/app/actions.ts` — Extended with doc save action
+- `src/app/actions.ts` — Extended with doc save/create actions
+- `.focal/.focalignore` — Exclusion patterns for doc discovery

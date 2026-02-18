@@ -8,10 +8,11 @@ import { createTask, createDoc } from "@/app/actions";
 type Props = {
   type: "task" | "doc";
   repoName: string;
+  parentDir?: string;
   onClose: () => void;
 };
 
-export function NewItemModal({ type, repoName, onClose }: Props) {
+export function NewItemModal({ type, repoName, parentDir, onClose }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -29,7 +30,7 @@ export function NewItemModal({ type, repoName, onClose }: Props) {
         const { taskId } = await createTask({ title: title.trim(), repoName });
         router.push(`/task/${taskId}`);
       } else {
-        const { slug } = await createDoc({ title: title.trim(), repoName });
+        const { slug } = await createDoc({ title: title.trim(), repoName, parentDir });
         router.push(`/docs/${slug}`);
       }
       onClose();

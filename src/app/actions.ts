@@ -67,13 +67,17 @@ export async function saveDoc(formData: { filePath: string; content: string }) {
   const { filePath, content } = formData;
 
   const resolved = path.resolve(filePath);
+  const sep = path.sep;
 
-  // Validate the path is inside .focal/docs/ subtree
+  // Validate: must be within allowed root, must be .md/.mdx, must not be in .focal/tasks/
   const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
-  if (!resolved.startsWith(allowedRoot + path.sep)) {
+  if (!resolved.startsWith(allowedRoot + sep)) {
     throw new Error("Invalid file path");
   }
-  if (!resolved.includes(`${path.sep}.focal${path.sep}docs${path.sep}`)) {
+  if (!resolved.endsWith(".md") && !resolved.endsWith(".mdx")) {
+    throw new Error("Invalid file path");
+  }
+  if (resolved.includes(sep + ".focal" + sep + "tasks" + sep)) {
     throw new Error("Invalid file path");
   }
 
@@ -96,50 +100,42 @@ function slugToTitle(slug: string): string {
 }
 
 function resolveTitle(filePath: string, repoRoot: string): { title: string; kind: "task" | "doc" } {
-  const relPath = filePath.replace(/^\.focal\//, "");
-  const isTask = relPath.startsWith("tasks/");
+  const isTask = filePath.startsWith(".focal/tasks/") || filePath.includes("/.focal/tasks/");
 
-  const absPath = path.join(repoRoot, filePath);
-  if (isTask && fs.existsSync(absPath)) {
-    try {
-      const raw = fs.readFileSync(absPath, "utf-8");
-      const { data } = matter(raw);
-      if (data.title) return { title: data.title, kind: "task" };
-    } catch {
-      // fall through to filename-based title
+  if (isTask) {
+    const absPath = path.join(repoRoot, filePath);
+    if (fs.existsSync(absPath)) {
+      try {
+        const raw = fs.readFileSync(absPath, "utf-8");
+        const { data } = matter(raw);
+        if (data.title) return { title: data.title, kind: "task" };
+      } catch {
+        // fall through to filename-based title
+      }
     }
   }
 
-  // Docs (and fallback): derive title from filename like the sidebar does
   const basename = path.basename(filePath).replace(/\.\w+$/, "");
   return { title: slugToTitle(basename), kind: isTask ? "task" : "doc" };
 }
 
-function extractPorcelainFile(line: string): string | null {
-  // git status --porcelain format: XY<space>PATH (3 chars then path)
-  // Extract the .focal/ path regardless of prefix length to handle
-  // both staged (M ) and unstaged ( M) statuses reliably.
-  const idx = line.indexOf(".focal/");
-  if (idx === -1) return null;
-  return line.slice(idx);
-}
-
-function parseGitPorcelain(output: string, prefix: string, repoRoot: string): GitFileStatus[] {
-  if (!output) return [];
+function parseMdPorcelain(output: string, prefix: string, repoRoot: string): GitFileStatus[] {
+  if (!output.trim()) return [];
   return output
     .split("\n")
-    .filter((line) => {
-      const file = extractPorcelainFile(line);
-      return file !== null && (file.startsWith(".focal/docs/") || file.startsWith(".focal/tasks/"));
-    })
-    .map((line) => {
-      const file = extractPorcelainFile(line)!;
-      const { title, kind } = resolveTitle(file, repoRoot);
+    .filter(Boolean)
+    .map((line) => ({
+      statusChars: line.slice(0, 2),
+      filePath: extractFilePath(line),
+    }))
+    .filter(({ filePath }) => filePath.endsWith(".md") || filePath.endsWith(".mdx"))
+    .map(({ statusChars, filePath }) => {
+      const { title, kind } = resolveTitle(filePath, repoRoot);
       return {
-        path: `${prefix}/${file}`,
+        path: `${prefix}/${filePath}`,
         title,
         kind,
-        status: line.startsWith("??") ? ("new" as const) : ("modified" as const),
+        status: statusChars.trim() === "??" ? ("new" as const) : ("modified" as const),
       };
     });
 }
@@ -151,13 +147,13 @@ export async function getGitStatus(repoFilter?: string): Promise<GitStatus> {
     const gitRoot = findGitRoot();
     const repoName = path.basename(gitRoot);
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: gitRoot,
         encoding: "utf-8",
-      }).trim();
+      }).trimEnd();
       return {
         localMode: true,
-        files: parseGitPorcelain(output, repoName, gitRoot),
+        files: parseMdPorcelain(output, repoName, gitRoot),
       };
     } catch {
       return { localMode: true, files: [] };
@@ -170,15 +166,13 @@ export async function getGitStatus(repoFilter?: string): Promise<GitStatus> {
   for (const slug of slugs) {
     if (repoFilter && slug !== repoFilter) continue;
     const repoPath = repoLocalPath(slug);
-    const focalDir = path.join(repoPath, ".focal");
-    if (!fs.existsSync(focalDir)) continue;
 
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: repoPath,
         encoding: "utf-8",
-      }).trim();
-      files.push(...parseGitPorcelain(output, slug, repoPath));
+      }).trimEnd();
+      files.push(...parseMdPorcelain(output, slug, repoPath));
     } catch {
       // Not a git repo or git not available — skip
     }
@@ -192,12 +186,17 @@ export async function getUncommittedFiles(): Promise<string[]> {
     const gitRoot = findGitRoot();
     const repoName = path.basename(gitRoot);
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: gitRoot,
         encoding: "utf-8",
-      }).trim();
-      if (!output) return [];
-      return output.split("\n").map((line) => `${repoName}/${line.slice(3)}`);
+      }).trimEnd();
+      if (!output.trim()) return [];
+      return output
+        .split("\n")
+        .filter(Boolean)
+        .map(extractFilePath)
+        .filter((file) => file.endsWith(".md") || file.endsWith(".mdx"))
+        .map((file) => `${repoName}/${file}`);
     } catch {
       return [];
     }
@@ -208,18 +207,18 @@ export async function getUncommittedFiles(): Promise<string[]> {
 
   for (const slug of slugs) {
     const repoPath = repoLocalPath(slug);
-    const focalDir = path.join(repoPath, ".focal");
-    if (!fs.existsSync(focalDir)) continue;
 
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: repoPath,
         encoding: "utf-8",
-      }).trim();
-      if (output) {
-        for (const line of output.split("\n")) {
-          const file = line.slice(3);
-          dirty.push(`${slug}/${file}`);
+      }).trimEnd();
+      if (output.trim()) {
+        for (const line of output.split("\n").filter(Boolean)) {
+          const file = extractFilePath(line);
+          if (file.endsWith(".md") || file.endsWith(".mdx")) {
+            dirty.push(`${slug}/${file}`);
+          }
         }
       }
     } catch {
@@ -271,7 +270,7 @@ export async function createTask({ title, repoName }: { title: string; repoName?
   return { taskId: `${resolvedRepoName}/${finalSlug}` };
 }
 
-export async function createDoc({ title, repoName }: { title: string; repoName?: string }): Promise<{ slug: string }> {
+export async function createDoc({ title, repoName, parentDir }: { title: string; repoName?: string; parentDir?: string }): Promise<{ slug: string }> {
   const slug = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -288,41 +287,81 @@ export async function createDoc({ title, repoName }: { title: string; repoName?:
     resolvedRepoName = repoName;
   }
 
-  const docsDir = path.join(repoRoot, ".focal", "docs");
-  fs.mkdirSync(docsDir, { recursive: true });
+  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
+
+  // Determine target directory
+  const targetDir = parentDir ? path.resolve(parentDir) : path.join(repoRoot, ".focal", "docs");
+  fs.mkdirSync(targetDir, { recursive: true });
 
   let finalSlug = slug;
   let counter = 2;
-  while (fs.existsSync(path.join(docsDir, `${finalSlug}.md`))) {
+  while (fs.existsSync(path.join(targetDir, `${finalSlug}.md`))) {
     finalSlug = `${slug}-${counter}`;
     counter++;
   }
 
-  const filePath = path.join(docsDir, `${finalSlug}.md`);
+  const filePath = path.join(targetDir, `${finalSlug}.md`);
   const resolved = path.resolve(filePath);
 
-  const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
+  // Validate the final file path
   if (!resolved.startsWith(allowedRoot + path.sep)) throw new Error("Invalid file path");
-  if (!resolved.includes(`${path.sep}.focal${path.sep}docs${path.sep}`)) throw new Error("Invalid file path");
+  if (!resolved.endsWith(".md") && !resolved.endsWith(".mdx")) throw new Error("Invalid file extension");
+  if (resolved.includes(path.sep + ".focal" + path.sep + "tasks" + path.sep)) throw new Error("Cannot create doc in tasks directory");
 
   fs.writeFileSync(resolved, "", "utf-8");
 
+  // Return slug relative to repo root
+  const relPath = path.relative(repoRoot, resolved);
+  const slugPath = relPath.replace(/\.(md|mdx)$/, "").replace(/\\/g, "/");
+
   revalidatePath("/docs");
-  return { slug: `${resolvedRepoName}/${finalSlug}` };
+  return { slug: `${resolvedRepoName}/${slugPath}` };
+}
+
+function extractFilePath(line: string): string {
+  // git status --porcelain format: XY PATH (always exactly 3 chars: 2 status + 1 space before path)
+  // Use slice(3) on the raw line (do NOT trim the line before slicing)
+  return line.slice(3);
+}
+
+function getChangedMdFiles(output: string): string[] {
+  return output
+    .split("\n")
+    .filter(Boolean)
+    .map(extractFilePath)
+    .filter((file) => (file.endsWith(".md") || file.endsWith(".mdx")) && !file.startsWith(".focal/tasks/"));
 }
 
 export async function commitChanges(repoFilter?: string): Promise<{ message: string }> {
   if (isLocalMode()) {
     const gitRoot = findGitRoot();
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: gitRoot,
         encoding: "utf-8",
-      }).trim();
-      if (!output) {
+      }).trimEnd();
+      if (!output.trim()) {
         return { message: "No changes to commit" };
       }
-      execSync("git add .focal/", { cwd: gitRoot });
+
+      // Stage task files
+      const tasksDir = path.join(gitRoot, ".focal", "tasks");
+      if (fs.existsSync(tasksDir)) {
+        execSync("git add -- .focal/tasks/", { cwd: gitRoot });
+      }
+
+      // Stage .md/.mdx doc files (not task files)
+      const changedDocs = getChangedMdFiles(output);
+      for (const file of changedDocs) {
+        execSync(`git add -- ${JSON.stringify(file)}`, { cwd: gitRoot });
+      }
+
+      // Check if anything was staged
+      const staged = execSync("git diff --cached --name-only", { cwd: gitRoot, encoding: "utf-8" }).trim();
+      if (!staged) {
+        return { message: "No changes to commit" };
+      }
+
       execSync('git commit -m "Update focal content"', { cwd: gitRoot });
       try {
         pushRepo(gitRoot);
@@ -344,17 +383,40 @@ export async function commitChanges(repoFilter?: string): Promise<{ message: str
   for (const slug of slugs) {
     if (repoFilter && slug !== repoFilter) continue;
     const repoPath = repoLocalPath(slug);
-    const focalDir = path.join(repoPath, ".focal");
-    if (!fs.existsSync(focalDir)) continue;
 
     try {
-      const output = execSync("git status --porcelain .focal/", {
+      const output = execSync("git status --porcelain", {
         cwd: repoPath,
         encoding: "utf-8",
-      }).trim();
-      if (!output) continue;
+      }).trimEnd();
+      if (!output.trim()) continue;
 
-      execSync("git add .focal/", { cwd: repoPath });
+      // Only process repos with .md/.mdx changes
+      const hasMdChanges = output
+        .split("\n")
+        .filter(Boolean)
+        .some((line) => {
+          const file = extractFilePath(line);
+          return file.endsWith(".md") || file.endsWith(".mdx");
+        });
+      if (!hasMdChanges) continue;
+
+      // Stage task files
+      const tasksDir = path.join(repoPath, ".focal", "tasks");
+      if (fs.existsSync(tasksDir)) {
+        execSync("git add -- .focal/tasks/", { cwd: repoPath });
+      }
+
+      // Stage .md/.mdx doc files (not task files)
+      const changedDocs = getChangedMdFiles(output);
+      for (const file of changedDocs) {
+        execSync(`git add -- ${JSON.stringify(file)}`, { cwd: repoPath });
+      }
+
+      // Check if anything was staged
+      const staged = execSync("git diff --cached --name-only", { cwd: repoPath, encoding: "utf-8" }).trim();
+      if (!staged) continue;
+
       execSync('git commit -m "Update focal content"', { cwd: repoPath });
 
       try {

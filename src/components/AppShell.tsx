@@ -25,6 +25,7 @@ export function AppShell({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [newModalType, setNewModalType] = useState<"task" | "doc" | null>(null);
+  const [pendingDocDir, setPendingDocDir] = useState<string | undefined>(undefined);
   const [showHostedBanner, setShowHostedBanner] = useState(false);
   const pathname = usePathname();
 
@@ -46,8 +47,14 @@ export function AppShell({
   );
 
   const onNewTask = useCallback(() => setNewModalType("task"), []);
-  const onNewDoc = useCallback(() => setNewModalType("doc"), []);
-  const closeModal = useCallback(() => setNewModalType(null), []);
+  const onNewDoc = useCallback((parentDir?: string) => {
+    setPendingDocDir(parentDir);
+    setNewModalType("doc");
+  }, []);
+  const closeModal = useCallback(() => {
+    setNewModalType(null);
+    setPendingDocDir(undefined);
+  }, []);
   const repoUrl = "https://github.com/tonioab49/focal";
 
   useEffect(() => {
@@ -103,7 +110,7 @@ export function AppShell({
         </div>
       </div>
 
-      {newModalType !== null && <NewItemModal type={newModalType} repoName={selectedRepo} onClose={closeModal} />}
+      {newModalType !== null && <NewItemModal type={newModalType} repoName={selectedRepo} parentDir={pendingDocDir} onClose={closeModal} />}
     </div>
   );
 }
