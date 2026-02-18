@@ -119,7 +119,7 @@ function buildDocTreeInner(files: string[], basePath: string, repoName: string, 
     });
   }
 
-  for (const [dir, dirFiles] of subDirs) {
+  for (const [dir, dirFiles] of Array.from(subDirs)) {
     const dirRelPath = basePath ? `${basePath}/${dir}` : dir;
     const children = buildDocTreeInner(dirFiles, dirRelPath, repoName, repoPath);
     if (children.length > 0) {

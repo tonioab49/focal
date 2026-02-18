@@ -130,7 +130,7 @@ function DocTreeItems({
             {hasChildren ? (
               <div className="group">
                 <div className="flex items-center" style={{ paddingLeft: itemPaddingLeft }}>
-                  <span className="flex-1 truncate rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  <span className="flex-1 truncate rounded-md py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
                     {node.title}
                   </span>
                   <button
