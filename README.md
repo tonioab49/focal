@@ -80,24 +80,6 @@ assignee: alice@example.com
 Add OAuth2 support for Google and GitHub login.
 ```
 
-Focal parses these files and renders them as a Kanban board (`todo` / `in-progress` / `done`). Edit from the UI, then commit and push without leaving the browser.
-
-## Features
-
-- **Kanban board** across one or many repos
-- **Rich text doc editor** with Markdown shortcuts (powered by Tiptap)
-- **Realtime collaboration** — multiple users can edit docs simultaneously with live cursors (via Hocuspocus/Yjs)
-- **Git-native workflow** — edit, commit, and push from the UI; changes are just files in your repo
-- **Two modes**: local (read from your working tree) or remote (clone GitHub repos via `GITHUB_REPOS` env var)
-
-## Configuration
-
-| Variable          | Default                | Description                                        |
-| ----------------- | ---------------------- | -------------------------------------------------- |
-| `GITHUB_REPOS`    | _(unset = local mode)_ | Comma-separated `owner/repo` slugs for remote mode |
-| `GITHUB_TOKEN`    | —                      | Fine-grained PAT with Contents read/write          |
-| `HOCUSPOCUS_PORT` | `1236`                 | WebSocket server port                              |
-
 ## Tech stack
 
 Next.js, React, TypeScript, Tailwind CSS, Tiptap, Hocuspocus, Yjs
