@@ -1,6 +1,6 @@
 # Goal
 
-Implement repo-wide doc discovery: scan entire repo for `*.md`/`*.mdx` via `git ls-files` instead of only scanning `.focal/docs/`.
+Implement repo-wide doc discovery: scan entire repo for `*.md` via `git ls-files` instead of only scanning `.focal/docs/`.
 
 # Context / assumptions
 

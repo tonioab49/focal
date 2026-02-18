@@ -7,7 +7,7 @@ import { syncAllRepos } from "./github";
 const VALID_STATUSES: TaskStatus[] = ["todo", "in-progress", "done"];
 const VALID_PRIORITIES: TaskPriority[] = ["low", "medium", "high", "urgent"];
 
-function findMdxFiles(dir: string): string[] {
+function findMdFiles(dir: string): string[] {
   const results: string[] = [];
 
   function walk(current: string) {
@@ -21,7 +21,7 @@ function findMdxFiles(dir: string): string[] {
       const full = path.join(current, entry.name);
       if (entry.isDirectory() && !entry.name.startsWith(".")) {
         walk(full);
-      } else if (entry.isFile() && entry.name.endsWith(".mdx")) {
+      } else if (entry.isFile() && entry.name.endsWith(".md")) {
         results.push(full);
       }
     }
@@ -38,7 +38,7 @@ function parseTaskFile(filePath: string, repoName: string): Task | null {
   if (!data.title || !data.status) return null;
   if (!VALID_STATUSES.includes(data.status)) return null;
 
-  const basename = path.basename(filePath, ".mdx");
+  const basename = path.basename(filePath, ".md");
   const id = `${repoName}/${basename}`;
 
   return {
@@ -62,7 +62,7 @@ export function loadTasks(repoName?: string): Task[] {
     const tasksDir = path.join(repo.path, ".focal", "tasks");
     if (!fs.existsSync(tasksDir)) continue;
 
-    const mdxFiles = findMdxFiles(tasksDir);
+    const mdxFiles = findMdFiles(tasksDir);
     for (const file of mdxFiles) {
       const task = parseTaskFile(file, repo.name);
       if (task) tasks.push(task);

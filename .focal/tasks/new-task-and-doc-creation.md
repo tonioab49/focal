@@ -6,7 +6,7 @@ priority: high
 
 ## Description
 
-Users have no way to create tasks or documents from the UI — they must manually create MDX files on disk. Add a keyboard-driven creation flow for both content types.
+Users have no way to create tasks or documents from the UI — they must manually create MD files on disk. Add a keyboard-driven creation flow for both content types.
 
 ## Acceptance Criteria
 

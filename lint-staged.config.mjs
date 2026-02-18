@@ -8,7 +8,7 @@ const self = fileURLToPath(import.meta.url);
 const safe = (files) => files.filter((f) => !f.startsWith(distDir) && f !== self);
 
 export default {
-  "*.{js,jsx,ts,tsx,mjs,cjs,json,md,mdx,yml,yaml,css,scss}": (files) => {
+  "*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css,scss}": (files) => {
     const f = safe(files);
     return f.length ? `prettier --write ${f.map((f) => JSON.stringify(f)).join(" ")}` : [];
   },

@@ -16,7 +16,7 @@ function slugToTitle(slug: string): string {
 }
 
 function stripDocExtension(name: string): string {
-  return name.replace(/\.(md|mdx)$/, "");
+  return name.replace(/\.md$/, "");
 }
 
 function loadFocalIgnore(repoPath: string): string[] {
@@ -69,7 +69,7 @@ function listRepoMdFiles(repoPath: string): string[] {
   let combined = "";
 
   try {
-    combined += execSync("git ls-files -- '*.md' '*.mdx'", {
+    combined += execSync("git ls-files -- '*.md'", {
       cwd: repoPath,
       encoding: "utf-8",
     });
@@ -78,7 +78,7 @@ function listRepoMdFiles(repoPath: string): string[] {
   }
 
   try {
-    combined += execSync("git ls-files --others --exclude-standard -- '*.md' '*.mdx'", {
+    combined += execSync("git ls-files --others --exclude-standard -- '*.md'", {
       cwd: repoPath,
       encoding: "utf-8",
     });

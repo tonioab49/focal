@@ -1,10 +1,10 @@
 # Tasks in Focal
 
-Tasks are the core unit of work in Focal. They are defined as MDX files within your repositories and automatically aggregated into a unified Kanban board.
+Tasks are the core unit of work in Focal. They are defined as Markdown files within your repositories and automatically aggregated into a unified Kanban board.
 
 ## Overview
 
-Focal parses MDX files from configured repositories and extracts task metadata from frontmatter. This allows teams to keep task definitions close to the code they relate to, while still having a centralized view of all work across projects.
+Focal parses Markdown files from configured repositories and extracts task metadata from frontmatter. This allows teams to keep task definitions close to the code they relate to, while still having a centralized view of all work across projects.
 
 All Focal data lives inside a `.focal/` directory at the root of each repository. Tasks specifically go in `.focal/tasks/`.
 
@@ -27,10 +27,10 @@ Tasks flow through three statuses on the Kanban board:
 
 ## Example Task
 
-Tasks are defined as `.mdx` files with YAML frontmatter.
+Tasks are defined as `.md` files with YAML frontmatter.
 We rely on the filesystem unicity of filenames for identifying tasks uniquely, so no need for an id field.
 
-```mdx
+```md
 ---
 title: Implement OAuth2 authentication flow
 status: in-progress
@@ -71,9 +71,9 @@ Tasks live in the `.focal/tasks/` directory at the root of each repository. This
 project/
 ├── .focal/
 │   └── tasks/
-│       ├── implement-auth.mdx
-│       ├── fix-memory-leak.mdx
-│       └── upgrade-deps.mdx
+│       ├── implement-auth.md
+│       ├── fix-memory-leak.md
+│       └── upgrade-deps.md
 └── src/
 ```
 

@@ -6,13 +6,13 @@ Focal keeps tasks and docs version-controlled alongside the source, editable fro
 
 ## Live Demo
 
-Play with a demo of Focal running on its own [repository](https://focal.ablg.io/)
+Play with a [demo of Focal running on its own repository](https://focal.ablg.io/)
 
 <img width="1829" height="927" alt="image" src="https://github.com/user-attachments/assets/8ee48f11-6e00-4e5f-8257-f440de430040" />
 
 ## Features
 
-- **Markdown-based Rich Text Editor**: No database, no MCP server. Tasks are stored as regular `*.mdx` files with frontmatter for fields like _priority_, docs are just regular `*.md` files
+- **Markdown-based Rich Text Editor**: No database, no MCP server. Tasks and docs are stored as regular `*.md` files with frontmatter for fields like _priority_
 - **Realtime Collaboration**: multiple users can edit docs simultaneously with live cursors. Useful for planning/design
 - **Git-backed**: No vendor lock-in. All changes are stored in git, your tasks and docs evolve contextually with the code
 
@@ -55,21 +55,11 @@ GITHUB_TOKEN=github_pat_xxxx
 PORT=xxxx
 ```
 
-## How it works
+## Task Format
 
-Create a `.focal/` directory in any repo:
+Tasks use Markdown with frontmatter for metadata:
 
-```
-.focal/
-├── tasks/
-│   └── implement-auth.mdx    # Task with YAML frontmatter
-└── docs/
-    └── getting-started.md     # Markdown documentation
-```
-
-Tasks use MDX with frontmatter for metadata:
-
-```mdx
+```md
 ---
 title: Implement OAuth2 flow
 status: in-progress

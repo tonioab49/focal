@@ -69,12 +69,12 @@ export async function saveDoc(formData: { filePath: string; content: string }) {
   const resolved = path.resolve(filePath);
   const sep = path.sep;
 
-  // Validate: must be within allowed root, must be .md/.mdx, must not be in .focal/tasks/
+  // Validate: must be within allowed root, must be .md, must not be in .focal/tasks/
   const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
   if (!resolved.startsWith(allowedRoot + sep)) {
     throw new Error("Invalid file path");
   }
-  if (!resolved.endsWith(".md") && !resolved.endsWith(".mdx")) {
+  if (!resolved.endsWith(".md")) {
     throw new Error("Invalid file path");
   }
   if (resolved.includes(sep + ".focal" + sep + "tasks" + sep)) {
@@ -128,7 +128,7 @@ function parseMdPorcelain(output: string, prefix: string, repoRoot: string): Git
       statusChars: line.slice(0, 2),
       filePath: extractFilePath(line),
     }))
-    .filter(({ filePath }) => filePath.endsWith(".md") || filePath.endsWith(".mdx"))
+    .filter(({ filePath }) => filePath.endsWith(".md"))
     .map(({ statusChars, filePath }) => {
       const { title, kind } = resolveTitle(filePath, repoRoot);
       return {
@@ -195,7 +195,7 @@ export async function getUncommittedFiles(): Promise<string[]> {
         .split("\n")
         .filter(Boolean)
         .map(extractFilePath)
-        .filter((file) => file.endsWith(".md") || file.endsWith(".mdx"))
+        .filter((file) => file.endsWith(".md"))
         .map((file) => `${repoName}/${file}`);
     } catch {
       return [];
@@ -216,7 +216,7 @@ export async function getUncommittedFiles(): Promise<string[]> {
       if (output.trim()) {
         for (const line of output.split("\n").filter(Boolean)) {
           const file = extractFilePath(line);
-          if (file.endsWith(".md") || file.endsWith(".mdx")) {
+          if (file.endsWith(".md")) {
             dirty.push(`${slug}/${file}`);
           }
         }
@@ -251,12 +251,12 @@ export async function createTask({ title, repoName }: { title: string; repoName?
 
   let finalSlug = slug;
   let counter = 2;
-  while (fs.existsSync(path.join(tasksDir, `${finalSlug}.mdx`))) {
+  while (fs.existsSync(path.join(tasksDir, `${finalSlug}.md`))) {
     finalSlug = `${slug}-${counter}`;
     counter++;
   }
 
-  const filePath = path.join(tasksDir, `${finalSlug}.mdx`);
+  const filePath = path.join(tasksDir, `${finalSlug}.md`);
   const resolved = path.resolve(filePath);
 
   const allowedRoot = isLocalMode() ? findGitRoot() : REPOS_DIR;
@@ -305,14 +305,14 @@ export async function createDoc({ title, repoName, parentDir }: { title: string;
 
   // Validate the final file path
   if (!resolved.startsWith(allowedRoot + path.sep)) throw new Error("Invalid file path");
-  if (!resolved.endsWith(".md") && !resolved.endsWith(".mdx")) throw new Error("Invalid file extension");
+  if (!resolved.endsWith(".md")) throw new Error("Invalid file extension");
   if (resolved.includes(path.sep + ".focal" + path.sep + "tasks" + path.sep)) throw new Error("Cannot create doc in tasks directory");
 
   fs.writeFileSync(resolved, "", "utf-8");
 
   // Return slug relative to repo root
   const relPath = path.relative(repoRoot, resolved);
-  const slugPath = relPath.replace(/\.(md|mdx)$/, "").replace(/\\/g, "/");
+  const slugPath = relPath.replace(/\.md$/, "").replace(/\\/g, "/");
 
   revalidatePath("/docs");
   return { slug: `${resolvedRepoName}/${slugPath}` };
@@ -329,7 +329,7 @@ function getChangedMdFiles(output: string): string[] {
     .split("\n")
     .filter(Boolean)
     .map(extractFilePath)
-    .filter((file) => (file.endsWith(".md") || file.endsWith(".mdx")) && !file.startsWith(".focal/tasks/"));
+    .filter((file) => file.endsWith(".md") && !file.startsWith(".focal/tasks/"));
 }
 
 export async function commitChanges(repoFilter?: string): Promise<{ message: string }> {
@@ -350,7 +350,7 @@ export async function commitChanges(repoFilter?: string): Promise<{ message: str
         execSync("git add -- .focal/tasks/", { cwd: gitRoot });
       }
 
-      // Stage .md/.mdx doc files (not task files)
+      // Stage .md doc files (not task files)
       const changedDocs = getChangedMdFiles(output);
       for (const file of changedDocs) {
         execSync(`git add -- ${JSON.stringify(file)}`, { cwd: gitRoot });
@@ -391,13 +391,13 @@ export async function commitChanges(repoFilter?: string): Promise<{ message: str
       }).trimEnd();
       if (!output.trim()) continue;
 
-      // Only process repos with .md/.mdx changes
+      // Only process repos with .md changes
       const hasMdChanges = output
         .split("\n")
         .filter(Boolean)
         .some((line) => {
           const file = extractFilePath(line);
-          return file.endsWith(".md") || file.endsWith(".mdx");
+          return file.endsWith(".md");
         });
       if (!hasMdChanges) continue;
 
@@ -407,7 +407,7 @@ export async function commitChanges(repoFilter?: string): Promise<{ message: str
         execSync("git add -- .focal/tasks/", { cwd: repoPath });
       }
 
-      // Stage .md/.mdx doc files (not task files)
+      // Stage .md doc files (not task files)
       const changedDocs = getChangedMdFiles(output);
       for (const file of changedDocs) {
         execSync(`git add -- ${JSON.stringify(file)}`, { cwd: repoPath });

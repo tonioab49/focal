@@ -25,7 +25,7 @@ describe("Local mode", () => {
     // Create .focal/tasks/ with a task file
     const tasksDir = path.join(tmpDir, ".focal", "tasks");
     fs.mkdirSync(tasksDir, { recursive: true });
-    fs.writeFileSync(path.join(tasksDir, "test-task.mdx"), "---\ntitle: Test Task\nstatus: todo\n---\n\nTask body\n");
+    fs.writeFileSync(path.join(tasksDir, "test-task.md"), "---\ntitle: Test Task\nstatus: todo\n---\n\nTask body\n");
 
     // Create .focal/docs/ with a doc
     const docsDir = path.join(tmpDir, ".focal", "docs");
@@ -124,7 +124,7 @@ describe("Local mode", () => {
       });
 
       // Read the file directly from the local repo
-      const localFile = path.join(tmpDir, ".focal", "tasks", "test-task.mdx");
+      const localFile = path.join(tmpDir, ".focal", "tasks", "test-task.md");
       const content = fs.readFileSync(localFile, "utf-8");
       expect(content).toContain("title: Updated Title");
       expect(content).toContain("status: in-progress");
@@ -137,7 +137,7 @@ describe("Local mode", () => {
 
       await expect(
         saveTask({
-          filePath: "/tmp/focal/repos/evil/repo/.focal/tasks/hack.mdx",
+          filePath: "/tmp/focal/repos/evil/repo/.focal/tasks/hack.md",
           title: "Hacked",
           status: "todo",
           priority: "",
@@ -189,7 +189,7 @@ describe("Local mode", () => {
         stdio: "pipe",
       });
 
-      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.mdx");
+      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.md");
       fs.writeFileSync(taskFile, "---\ntitle: Unstaged Task\nstatus: todo\n---\n");
 
       const { getGitStatus } = await import("@/app/actions");
@@ -208,19 +208,19 @@ describe("Local mode", () => {
 
     it("detects modified files in the local .focal/ directory", async () => {
       // Modify a task file
-      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.mdx");
+      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.md");
       fs.writeFileSync(taskFile, "---\ntitle: Modified Task\nstatus: todo\n---\n\nModified body\n");
 
       const { getUncommittedFiles } = await import("@/app/actions");
       const files = await getUncommittedFiles();
       expect(files.length).toBeGreaterThan(0);
-      expect(files[0]).toMatch(/tasks\/test-task\.mdx$/);
+      expect(files[0]).toMatch(/tasks\/test-task\.md$/);
       // Must NOT reference the remote repos dir
       expect(files[0]).not.toContain("/tmp/focal/repos");
     });
 
     it("prefixes files with the repo name (directory basename)", async () => {
-      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.mdx");
+      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.md");
       fs.writeFileSync(taskFile, "---\ntitle: Changed\nstatus: todo\n---\n");
 
       const { getUncommittedFiles } = await import("@/app/actions");
@@ -233,7 +233,7 @@ describe("Local mode", () => {
   describe("commitChanges() in local mode", () => {
     it("commits .focal/ changes to the local git repo", async () => {
       // Modify a task
-      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.mdx");
+      const taskFile = path.join(tmpDir, ".focal", "tasks", "test-task.md");
       fs.writeFileSync(taskFile, "---\ntitle: Committed Task\nstatus: done\n---\n\nDone!\n");
 
       const { commitChanges } = await import("@/app/actions");
