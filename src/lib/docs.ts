@@ -86,7 +86,7 @@ function listRepoMdFiles(repoPath: string): string[] {
     // ignore
   }
 
-  const files = [...new Set(combined.split("\n").filter(Boolean))];
+  const files = Array.from(new Set(combined.split("\n").filter(Boolean)));
   return files.filter((f) => isPathAllowed(f) && !isIgnored(f, ignorePatterns));
 }
 
