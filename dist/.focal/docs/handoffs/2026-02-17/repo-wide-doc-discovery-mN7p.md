@@ -1,0 +1,40 @@
+# Goal
+
+Implement repo-wide doc discovery: scan entire repo for `*.md` via `git ls-files` instead of only scanning `.focal/docs/`.
+
+# Context / assumptions
+
+- Previous discovery: only scanned `.focal/docs/` using filesystem traversal
+- New approach: `git ls-files` (fast, respects `.gitignore`)
+- Always include `.focal/docs/`; exclude dot dirs except `.focal/docs/`; exclude `.focal/tasks/`
+- `.focal/.focalignore` for additional user exclusions
+- Slugs now relative to repo root (breaking URL change, accepted by user)
+- No new npm dependencies added (`minimatch` not needed — custom pattern matching used)
+
+# Decisions made
+
+- `.trimEnd()` instead of `.trim()` on git status porcelain output — critical: leading spaces are valid XY status chars; `.trim()` strips the leading space of line 1, corrupting path extraction via `slice(3)`
+- `extractFilePath(line)` helper always does `line.slice(3)` on raw (untrimmed) line
+- `commitChanges` stages `.focal/tasks/` explicitly + individual `.md`/`.mdx` doc files (not entire `.focal/`)
+- Directory nodes in sidebar get a hover `+` button passing `node.filePath` as `parentDir` to `createDoc`
+- `saveDoc` now validates: within allowedRoot + ends with `.md`/`.mdx` + NOT in `.focal/tasks/` (was: must be in `.focal/docs/`)
+- `createDoc` gains optional `parentDir` param; defaults to `.focal/docs/` if absent
+
+# Artifacts
+
+- `src/lib/docs.ts` — completely rewritten; new functions: `loadFocalIgnore`, `isPathAllowed`, `isIgnored`, `listRepoMdFiles`, `buildDocTreeInner`
+- `src/app/actions.ts` — `saveDoc`, `createDoc`, `getGitStatus`, `getUncommittedFiles`, `commitChanges` updated; added `extractFilePath`, `parseMdPorcelain`, `getChangedMdFiles`
+- `src/components/Sidebar.tsx` — `onNewDoc` prop now `(parentDir?: string) => void`; directory hover `+` button added
+- `src/components/AppShell.tsx` — `pendingDocDir` state; `onNewDoc` accepts optional `parentDir`
+- `src/components/NewItemModal.tsx` — `parentDir?` prop added, passed to `createDoc`
+- `.focal/.focalignore` — created with default build-output exclusions
+- `.focal/docs/docs.md` — rewritten to document new discovery model
+- `.focal/tasks/repo-wide-doc-discovery.mdx` — feature task (status: done)
+
+# If we resume
+
+- All 18 local-mode tests pass; remote tests pass in isolation but fail when run together due to pre-existing `/tmp/focal/repos` cleanup race condition (not caused by this change)
+- Run `yarn test` to verify tests still green
+- Test manually: open a repo with `.md` files outside `.focal/docs/` and confirm they appear in sidebar
+- Verify `.focal/.focalignore` exclusions work (add a pattern, confirm file disappears from sidebar)
+- Verify per-directory `+` button creates doc in the correct subdirectory

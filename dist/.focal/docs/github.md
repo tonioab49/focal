@@ -4,7 +4,7 @@ This document describes how Focal interacts with remote GitHub repositories in *
 
 ## Overview
 
-In remote mode, Focal clones GitHub repositories to `/tmp/focal/repos` and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for MDX task files, allows editing them through the UI, and commits/pushes changes back.
+In remote mode, Focal clones GitHub repositories to `/tmp/focal/repos` and interacts with them through Git. Repositories are configured via the `GITHUB_REPOS` environment variable. Focal scans each repo's `.focal/tasks/` directory for Markdown task files, allows editing them through the UI, and commits/pushes changes back.
 
 ## Configuration
 
@@ -60,11 +60,11 @@ The token is used only in the Git remote URL. It is never logged, never sent to 
 
 ### 2. Read tasks
 
-Focal scans `/tmp/focal/repos/{owner}/{repo}/.focal/tasks/` for `.mdx` files and parses their YAML frontmatter, exactly as before. The repository display name is `{owner}/{repo}`.
+Focal scans `/tmp/focal/repos/{owner}/{repo}/.focal/tasks/` for `.md` files and parses their YAML frontmatter, exactly as before. The repository display name is `{owner}/{repo}`.
 
 ### 3. Edit tasks
 
-When a user saves a task through the edit form, Focal writes the updated frontmatter to the MDX file in the cloned copy under `/tmp/focal/repos/`. This is a local filesystem operation — nothing is sent to GitHub at this point. (In local mode, writes go directly to the working directory instead; see [Repository Modes](repos).)
+When a user saves a task through the edit form, Focal writes the updated frontmatter to the Markdown file in the cloned copy under `/tmp/focal/repos/`. This is a local filesystem operation — nothing is sent to GitHub at this point. (In local mode, writes go directly to the working directory instead; see [Repository Modes](repos).)
 
 ### 4. Commit and push
 

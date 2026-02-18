@@ -4,7 +4,7 @@ This document describes how Focal handles documentation files alongside tasks.
 
 ## Overview
 
-Focal scans the **entire repository** for Markdown files (`*.md` and `*.mdx`) and displays them in the sidebar under the "Documentation" section. The `.focal/docs/` directory is always included; dot directories (e.g. `.git/`, `.github/`) are excluded except for `.focal/docs/`. Users can view and edit documentation through a rich text editor powered by Tiptap, with changes committed and pushed to Git just like task edits.
+Focal scans the **entire repository** for Markdown files (`*.md`) and displays them in the sidebar under the "Documentation" section. The `.focal/docs/` directory is always included; dot directories (e.g. `.git/`, `.github/`) are excluded except for `.focal/docs/`. Users can view and edit documentation through a rich text editor powered by Tiptap, with changes committed and pushed to Git just like task edits.
 
 ## Discovery Model
 
@@ -16,7 +16,7 @@ Focal uses `git ls-files` to enumerate documentation files. This approach:
 
 ### Inclusion Rules
 
-1. **Both `.md` and `.mdx`** files are picked up everywhere in the repo
+1. **`.md`** files are picked up everywhere in the repo
 2. **`.focal/docs/`** is always included
 3. **Dot directories** are excluded — any path where a segment starts with `.` is skipped, except paths under `.focal/docs/`
 4. **`.focal/tasks/`** is explicitly excluded (task files are not shown as docs)
@@ -64,7 +64,7 @@ repo/
     │   ├── index.md           # appears in docs tree
     │   └── getting-started.md # appears in docs tree
     └── tasks/
-        └── *.mdx              # task files — NOT in docs tree
+        └── *.md               # task files — NOT in docs tree
 ```
 
 ## Sidebar Integration
@@ -154,7 +154,7 @@ Reads and returns the raw Markdown content of a document.
 Writes Markdown content to disk. Validates:
 
 - Path is within the allowed root (local Git root in local mode, `REPOS_DIR` in remote mode)
-- File ends with `.md` or `.mdx`
+- File ends with `.md`
 - Path is NOT within `.focal/tasks/`
 
 ### `createDoc({ title, repoName, parentDir? })`
@@ -166,7 +166,7 @@ Creates a new empty doc. `parentDir` defaults to `.focal/docs/` if not provided.
 Stages and commits changed docs:
 
 1. Stages `.focal/tasks/` (task files)
-2. Stages individual changed `.md`/`.mdx` files (excluding task files)
+2. Stages individual changed `.md` files (excluding task files)
 3. Commits with message "Update focal content"
 4. Pushes to remote (in remote mode)
 
@@ -174,7 +174,7 @@ Stages and commits changed docs:
 
 - File paths validated to stay within the allowed root directory (local Git root or `REPOS_DIR`)
 - Writes rejected if path is in `.focal/tasks/` (prevents overwriting task frontmatter)
-- Only `.md`/`.mdx` files are staged during commit (no accidental staging of other files)
+- Only `.md` files are staged during commit (no accidental staging of other files)
 - Content is treated as Markdown text, not executed
 
 ## Keyboard Shortcuts

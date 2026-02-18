@@ -1,0 +1,20 @@
+---
+title: Add "New Task" and "New Document" creation flow
+status: done
+priority: high
+---
+
+## Description
+
+Users have no way to create tasks or documents from the UI — they must manually create MD files on disk. Add a keyboard-driven creation flow for both content types.
+
+## Acceptance Criteria
+
+- [ ] Press `N` on the Kanban board → opens a "New Task" modal
+- [ ] Press `N` on a docs page → opens a "New Document" modal
+- [ ] Modal shows a single title input (auto-focused), nothing else
+- [ ] Enter submits; Escape cancels
+- [ ] On submit, the file is created on disk and the user is redirected to the standard edit view
+- [ ] Filename is derived from the title (slugified)
+- [ ] New tasks default to `status: todo`
+- [ ] The `N` shortcut is listed in the shortcut help panel (`?`)

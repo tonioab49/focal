@@ -134,6 +134,9 @@ function buildDocTreeInner(files: string[], basePath: string, repoName: string, 
   }
 
   nodes.sort((a, b) => {
+    const aIsDir = !!a.children;
+    const bIsDir = !!b.children;
+    if (aIsDir !== bIsDir) return aIsDir ? 1 : -1;
     if (a.title.toLowerCase() === "index") return -1;
     if (b.title.toLowerCase() === "index") return 1;
     return a.title.localeCompare(b.title);

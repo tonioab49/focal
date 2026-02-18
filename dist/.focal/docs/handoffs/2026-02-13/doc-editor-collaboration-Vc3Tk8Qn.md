@@ -1,0 +1,34 @@
+# Goal
+
+Add realtime collaborative editing to DocEditor using Hocuspocus + tiptap Collaboration extensions.
+
+# Context / assumptions
+
+- Hocuspocus is a free, open-source Yjs WebSocket server — no paid tiptap features used
+- Server acts as a dumb relay (no onLoadDocument persistence); tiptap's Collaboration extension handles initial content from the `content` prop when Yjs doc is empty
+- Random usernames (e.g. "Blue Fox") generated client-side, stored in sessionStorage
+- Save broadcast uses Hocuspocus stateless messages (`doc:saved`)
+
+# Decisions made
+
+- Hocuspocus server in `server/hocuspocus.ts` on port 1236 (configurable via `HOCUSPOCUS_PORT`)
+- `concurrently -k` used in all scripts to ensure CTRL-C kills both Next.js and WS server
+- StarterKit's `undoRedo: false` since Collaboration provides Yjs-aware undo/redo
+- Docker CMD spawns both processes with proper SIGTERM forwarding
+
+# Artifacts
+
+- `server/hocuspocus.ts` — new WebSocket server file
+- `src/components/DocEditor.tsx` — rewritten with collaboration, cursors, connected users display
+- `src/app/globals.css` — added `.collaboration-cursor__caret` and `__label` styles
+- `package.json` — new deps + updated scripts
+- `Dockerfile` — builds and runs both servers
+- `.focal/docs/realtime-collaboration.md` — full design doc
+
+# If we resume
+
+- Start by running `yarn dev` and opening two browser windows on the same doc to test collab
+- Verify cursor bubbles show with random usernames and colors
+- Test save broadcast: save in one window, confirm "Unsaved changes" disappears in the other
+- Test CTRL-C in terminal kills both processes cleanly
+- Docker build has not been tested yet — run `docker build -t focal .` to verify
