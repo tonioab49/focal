@@ -1,18 +1,20 @@
 # Focal
 
-Focal is a collaborative, Markdown-based editor for **issues** and **docs** that lives inside your Git repos.
+**Collaborative, Markdown-based editor for **tasks** and **docs** inside your Git repo**
 
-Project management tools drift from the code and were not designed for AI agents. Focal keeps tasks and docs version-controlled alongside the source, editable from its own web UI or any text editor.
-
-- **Markdown-based Rich Text Editor**: No database, no MCP server. Issues are stored as regular `*.mdx` files with frontmatter for fields like _priority_, docs are just regular `*.md` files
-- **Realtime Collaboration**: multiple users can edit docs simultaneously with live cursors. Useful for planning/design
-- **Git-backed**: No vendor lock-in. All changes are stored in git, your issues and docs evolve contextually with the code
-
-<img width="1829" height="927" alt="image" src="https://github.com/user-attachments/assets/8ee48f11-6e00-4e5f-8257-f440de430040" />
+Focal keeps tasks and docs version-controlled alongside the source, editable from its own web UI or any text editor.
 
 ## Live Demo
 
 Play with a demo of Focal running on its own [repository](https://focal.ablg.io/)
+
+<img width="1829" height="927" alt="image" src="https://github.com/user-attachments/assets/8ee48f11-6e00-4e5f-8257-f440de430040" />
+
+## Features
+
+- **Markdown-based Rich Text Editor**: No database, no MCP server. Tasks are stored as regular `*.mdx` files with frontmatter for fields like _priority_, docs are just regular `*.md` files
+- **Realtime Collaboration**: multiple users can edit docs simultaneously with live cursors. Useful for planning/design
+- **Git-backed**: No vendor lock-in. All changes are stored in git, your tasks and docs evolve contextually with the code
 
 ## Quick start for local repositories
 
@@ -23,7 +25,7 @@ cd <your favorite git repo>
 npx github:tonioab49/focal
 ```
 
-Open [http://localhost:3333](http://localhost:3333). Focal will read issues and docs from the local repo.
+Open [http://localhost:3333](http://localhost:3333). Focal will read tasks and docs from the local repo.
 
 ## Docker instructions
 

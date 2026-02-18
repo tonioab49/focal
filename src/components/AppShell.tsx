@@ -81,7 +81,6 @@ export function AppShell({
           gitStatus={gitStatus}
           repos={repos}
           selectedRepo={selectedRepo}
-          onNewTask={onNewTask}
           onNewDoc={onNewDoc}
         />
 
